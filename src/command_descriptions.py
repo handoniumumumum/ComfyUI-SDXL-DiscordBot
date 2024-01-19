@@ -10,7 +10,7 @@ generation_messages = json.loads(open("./data/generation_messages.json", "r").re
 completion_messages = json.loads(open("./data/completion_messages.json", "r").read())
 
 # These aspect ratio resolution values correspond to the SDXL Empty Latent Image node.
-# A latent modification node in the workflow converts it to the equivalent SD 1.5 resolution values.
+# A latent modification node in the 1.5 workflow converts it to the equivalent SD 1.5 resolution values.
 ASPECT_RATIO_CHOICES = [
     Choice(name="1:1", value="1024 x 1024  (square)"),
     Choice(name="7:9 portrait", value=" 896 x 1152  (portrait)"),
@@ -37,7 +37,7 @@ BASE_ARG_DESCS = {
 }
 IMAGINE_ARG_DESCS = {
     **BASE_ARG_DESCS,
-    "num_steps": "Number of sampling steps; range [1, 30]",
+    "num_steps": "range [1, 30], default {SD15_GENERATION_DEFAULTS.denoise_strength}; Number of sampling steps",
     "input_file": "Image to use as input for img2img",
     "denoise_strength": f"range [0.01, 1.0], default {SD15_GENERATION_DEFAULTS.denoise_strength}; Strength of denoising filter during img2img. Only works when input_file is set",
     "inpainting_prompt": "Detection prompt for inpainting; examples: 'background' or 'person'",

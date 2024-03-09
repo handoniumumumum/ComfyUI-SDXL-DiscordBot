@@ -35,3 +35,7 @@ def get_samplers():
     samplers = [sampler.value for sampler in Samplers]
     return samplers
 
+def get_tortoise_voices():
+    from comfy_script.runtime.nodes import TortoiseTTSGenerate
+    voices = [voice.value for voice in TortoiseTTSGenerate.voice]
+    return voices

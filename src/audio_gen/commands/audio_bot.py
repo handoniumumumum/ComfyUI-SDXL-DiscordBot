@@ -1,17 +1,26 @@
 import logging
+import json
 from io import BytesIO
 
 import discord
-from discord.app_commands import Range
+from discord import app_commands
+from discord.app_commands import Range, Choice
 
 from src.audio_gen.audio_gen import *
 from src.audio_gen.ui.audio_buttons import AudioButtons
+from src.comfyscript_utils import get_tortoise_voices
 from src.consts import *
 
 logger = logging.getLogger("bot")
 
-# tortoise_voices = get_tortoise_voices()
-# TORTOISE_VOICE_CHOICES = [Choice(name=v, value=v) for v in sorted(tortoise_voices[0])][-25:]
+def get_voice_choice_for_key(key):
+    if key in voice_choice_map:
+        return voice_choice_map[key]
+    return key
+
+tortoise_voices = get_tortoise_voices()
+voice_choice_map = json.load(open("data/voice_selections.json"))
+TORTOISE_VOICE_CHOICES = [Choice(name=get_voice_choice_for_key(v), value=v) for v in sorted(tortoise_voices)][-25:]
 
 class SoundCommand():
     async def _do_request(
@@ -82,7 +91,7 @@ class SpeechGenCommand(SoundCommand):
 
     def add_commands(self):
         @self.tree.command(name="speech", description="Generate speech from text using TorToiSe.")
-        # @app_commands.choices(voice=TORTOISE_VOICE_CHOICES)
+        @app_commands.choices(voice=TORTOISE_VOICE_CHOICES)
         async def speech_command(
                 interaction: discord.Interaction,
                 prompt: str,
@@ -108,6 +117,7 @@ class SpeechGenCommand(SoundCommand):
             )
 
         @self.tree.command(name="sing", description="Sing!")
+        @app_commands.choices(voice=TORTOISE_VOICE_CHOICES)
         async def sing_command(
                 interaction: discord.Interaction,
                 music_prompt: str,

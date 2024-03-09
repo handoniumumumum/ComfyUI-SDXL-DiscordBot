@@ -13,14 +13,8 @@ from src.consts import *
 
 logger = logging.getLogger("bot")
 
-def get_voice_choice_for_key(key):
-    if key in voice_choice_map:
-        return voice_choice_map[key]
-    return key
-
-tortoise_voices = get_tortoise_voices()
 voice_choice_map = json.load(open("data/voice_selections.json"))
-TORTOISE_VOICE_CHOICES = [Choice(name=get_voice_choice_for_key(v), value=v) for v in sorted(tortoise_voices)][-25:]
+TORTOISE_VOICE_CHOICES = [Choice(name=v, value=k) for k, v in voice_choice_map.items()]
 
 class SoundCommand():
     async def _do_request(

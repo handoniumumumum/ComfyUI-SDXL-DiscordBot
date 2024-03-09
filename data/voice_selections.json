@@ -1,6 +1,5 @@
 {
   "angie": "Angelina Jolie",
-  "applejack": "southern My Little Pony",
   "daniel": "Daniel Craig",
   "deniro": "British Deniro",
   "emma": "Emma Roberts",
@@ -13,19 +12,12 @@
   "myself": "American man",
   "pat": "Patrick Stewart (UK)",
   "pat2": "Patrick Horgan (UK)",
-  "rainbow": "Rainbow Dash (MLP)",
   "snakes": "Samuel L. Jackson",
   "tim_reynolds": "Tim-Gerard Reynolds (UK)",
   "tom": "Tom Hanks ",
   "weaver": "Sigourney Weaver",
   "william": "William Shatner",
-  "train_atkins": "English woman",
-  "train_daws": "American woman",
-  "train_dotrice": "British man, Roy Dotrice",
-  "train_dreams": "softer spoken woman",
   "train_empire": "deep American male voice",
-  "train_grace": "youthful American woman",
-  "train_kennard": "English female accent",
-  "train_lescault": "John Lescault",
-  "train_mouse": "English male accent"
+  "train_mouse": "English male accent",
+  "random": "Random"
 }

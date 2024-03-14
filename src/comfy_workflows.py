@@ -1,3 +1,4 @@
+import configparser
 import os
 
 from src.defaults import UPSCALE_DEFAULTS
@@ -9,6 +10,10 @@ model_type_to_workflow = {
     ModelType.SDXL: SDXLWorkflow,
     ModelType.CASCADE: SDCascadeWorkflow
 }
+
+config = configparser.ConfigParser()
+config.read("config.properties")
+comfy_root_directory = config["LOCAL"]["COMFY_ROOT_DIR"]
 
 async def _do_txt2img(params: ImageWorkflow, model_type: ModelType, loras: list[Lora]):
     workflow = model_type_to_workflow[model_type](params.model, params.clip_skip, loras)
@@ -70,22 +75,25 @@ async def _do_video(params: ImageWorkflow, model_type: ModelType, loras: list[Lo
     import PIL
     with open(params.filename, "rb") as f:
         image = PIL.Image.open(f)
-        width = PIL.Image.open(f).width
-        height = PIL.Image.open(f).height
+        width = image.width
+        height = image.height
         padding = 0
         if width / height <= 1:
-            padding = (height - width) // 2
+            padding = height // 2
 
     image = LoadImage(params.filename)[0]
     image, _ = ImagePadForOutpaint(image, padding, 0, padding, 0, 40)
     model, clip_vision, vae = ImageOnlyCheckpointLoader(params.model)
     model = VideoLinearCFGGuidance(model, params.min_cfg)
-    positive, negative, latent = SVDImg2vidConditioning(clip_vision, image, vae, 1024, 576, 25, params.motion, 6, params.augmentation)
-    latent = KSampler(model, params.seed, 20, params.cfg_scale, 'euler', 'normal', positive, negative, latent, 1)
+    positive, negative, latent = SVDImg2vidConditioning(clip_vision, image, vae, 1024, 576, 25, params.motion, 8, params.augmentation)
+    latent = KSampler(model, params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler, positive, negative, latent, 1)
     image2 = VAEDecode(latent, vae)
     video = VHSVideoCombine(image2, 8, 0, 'final_output', 'image/gif', False, True, None, None)
+    preview = PreviewImage(image)
+    await preview._wait()
+    await video._wait()
     results = video.wait()._output
-    final_video = PIL.Image.open(os.path.join("embedded_comfy/output", results['gifs'][0]['filename']))
+    final_video = PIL.Image.open(os.path.join(comfy_root_directory, "output", results['gifs'][0]['filename']))
     return [final_video]
 
 

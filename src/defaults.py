@@ -95,6 +95,7 @@ VIDEO_GENERATION_DEFAULTS = ImageWorkflow(
     min_cfg=float(config["VIDEO_GENERATION_DEFAULTS"]["MIN_CFG"]),
     motion=int(config["VIDEO_GENERATION_DEFAULTS"]["MOTION"]),
     augmentation=float(config["VIDEO_GENERATION_DEFAULTS"]["AUGMENTATION"]),
+    fps=int(config["VIDEO_GENERATION_DEFAULTS"]["FPS"]),
 )
 
 ADD_DETAIL_DEFAULTS = ImageWorkflow(

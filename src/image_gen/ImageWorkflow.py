@@ -57,3 +57,4 @@ class ImageWorkflow:
     min_cfg: Optional[float] = None
     motion: Optional[int] = None
     augmentation: Optional[float] = None
+    fps: Optional[int] = None

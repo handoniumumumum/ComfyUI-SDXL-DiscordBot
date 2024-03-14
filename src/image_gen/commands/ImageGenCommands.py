@@ -103,6 +103,7 @@ class ImageGenCommands:
                 min_cfg=min_cfg or VIDEO_GENERATION_DEFAULTS.min_cfg,
                 motion=motion or VIDEO_GENERATION_DEFAULTS.motion,
                 augmentation=augmentation or VIDEO_GENERATION_DEFAULTS.augmentation,
+                fps=VIDEO_GENERATION_DEFAULTS.fps,
                 filename=await process_attachment(input_file, interaction),
             )
             await self._do_request(

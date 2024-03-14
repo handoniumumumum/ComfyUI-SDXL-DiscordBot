@@ -60,7 +60,15 @@ SDXL_ARG_DESCS = {
     "inpainting_detection_threshold": f"range [0, 255], default {SDXL_GENERATION_DEFAULTS.inpainting_detection_threshold}; Detection threshold for inpainting. Only works when inpainting_prompt is set",
     "clip_skip": f"default: {SDXL_GENERATION_DEFAULTS.clip_skip}",
 }
-VIDEO_ARG_DESCS = {**BASE_ARG_DESCS} | {k: v for k, v in IMAGE_GEN_DESCS.items() if k != "aspect_ratio"}
+VIDEO_ARG_DESCS = ({
+                   "input_file": "Starting image for video generation",
+                    "cfg_scale": f"range [1.0, {MAX_CFG}]; Degree to which AI should adhere to the starting image. Default: {VIDEO_GENERATION_DEFAULTS.cfg_scale}",
+                    "min_cfg": f"Starting CFG value. Generation will move to CFG_SCALE over the length of the video. Default: {VIDEO_GENERATION_DEFAULTS.min_cfg}",
+                    "motion": f"The amount of motion in the video. Default: {VIDEO_GENERATION_DEFAULTS.motion}",
+                    "augmentation": f"How much the video will differ from your starting image. Introduces a lot of noise. Default: {VIDEO_GENERATION_DEFAULTS.augmentation}",
+                  }
+                )
+
 CASCADE_ARG_DESCS = {
     **BASE_ARG_DESCS,
     "aspect_ratio": "Aspect ratio of the generated image",

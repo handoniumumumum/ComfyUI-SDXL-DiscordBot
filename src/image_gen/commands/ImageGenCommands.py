@@ -78,44 +78,37 @@ class ImageGenCommands:
                 params,
             )
 
-        @self.tree.command(name="video", description="Generate a video based on input text")
+        @self.tree.command(name="video", description="Generate a video based on an input image")
         @app_commands.describe(**VIDEO_ARG_DESCS)
-        @app_commands.choices(**VIDEO_ARG_CHOICES)
+        # @app_commands.choices(**VIDEO_ARG_CHOICES)
         async def slash_command(
             interaction: discord.Interaction,
-            prompt: str,
-            negative_prompt: str = None,
-            model: str = None,
-            lora: Choice[str] = None,
-            lora_strength: float = 1.0,
-            lora2: Choice[str] = None,
-            lora_strength2: float = 1.0,
-            sampler: str = None,
-            num_steps: Range[int, 1, MAX_STEPS] = None,
+            input_file: Attachment,
             cfg_scale: Range[float, 1.0, MAX_CFG] = None,
+            min_cfg: Range[float, 1.0, MAX_CFG] = None,
+            motion: Range[int, 1, 127] = None,
+            augmentation: Range[float, 0, 10] = None,
             seed: int = None,
-            clip_skip: Range[int, -2, -1] = None,
         ):
             params = ImageWorkflow(
                 ModelType.VIDEO,
                 WorkflowType.video,
-                prompt,
-                negative_prompt,
-                model or VIDEO_GENERATION_DEFAULTS.model,
-                unpack_choices(lora, lora2),
-                [lora_strength, lora_strength2],
-                (512, 512),
-                sampler=sampler or VIDEO_GENERATION_DEFAULTS.sampler,
-                num_steps=num_steps or VIDEO_GENERATION_DEFAULTS.num_steps,
+                "",
+                "",
+                model=VIDEO_GENERATION_DEFAULTS.model,
+                num_steps=VIDEO_GENERATION_DEFAULTS.num_steps,
                 cfg_scale=cfg_scale or VIDEO_GENERATION_DEFAULTS.cfg_scale,
                 seed=seed,
                 slash_command="video",
-                clip_skip=clip_skip or VIDEO_GENERATION_DEFAULTS.clip_skip,
+                min_cfg=min_cfg or VIDEO_GENERATION_DEFAULTS.min_cfg,
+                motion=motion or VIDEO_GENERATION_DEFAULTS.motion,
+                augmentation=augmentation or VIDEO_GENERATION_DEFAULTS.augmentation,
+                filename=await process_attachment(input_file, interaction),
             )
             await self._do_request(
                 interaction,
-                f'🎥{interaction.user.mention} asked me to create the video "{prompt}"! {random.choice(generation_messages)} 🎥',
-                f'{interaction.user.mention} asked me to create the video "{prompt}"! {random.choice(completion_messages)} 🎥',
+                f'🎥{interaction.user.mention} asked me to create a video! {random.choice(generation_messages)} 🎥',
+                f'{interaction.user.mention} asked me to create video! {random.choice(completion_messages)} 🎥',
                 "video",
                 params,
             )

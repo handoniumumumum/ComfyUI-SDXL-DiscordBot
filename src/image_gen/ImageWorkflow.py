@@ -54,3 +54,6 @@ class ImageWorkflow:
     use_accelerator_lora: Optional[bool] = None
     accelerator_lora_name: Optional[str] = None
     scheduler: Optional[str] = None
+    min_cfg: Optional[float] = None
+    motion: Optional[int] = None
+    augmentation: Optional[float] = None

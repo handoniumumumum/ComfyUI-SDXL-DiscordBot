@@ -67,13 +67,13 @@ async def _do_image_mashup(params: ImageWorkflow, model_type: ModelType, loras: 
     return image_batch
 
 async def _do_video(params: ImageWorkflow, model_type: ModelType, loras: list[Lora]):
-    workflow = SD15Workflow(params.model, params.clip_skip, loras)
-    workflow.setup_for_animate_diff()
-    workflow.create_latents(params.dimensions, 32)
-    workflow.condition_prompts(params.prompt, params.negative_prompt or "")
-    workflow.sample(params.seed, params.num_steps, params.cfg_scale, params.sampler, "normal")
-    images = workflow.decode()
-    video = workflow.animate_diff_combine(images)
+    image = LoadImage(params.filename)[0]
+    model, clip_vision, vae = ImageOnlyCheckpointLoader(params.model)
+    model = VideoLinearCFGGuidance(model, params.min_cfg)
+    positive, negative, latent = SVDImg2vidConditioning(clip_vision, image, vae, 1024, 576, 25, params.motion, 6, params.augmentation)
+    latent = KSampler(model, params.seed, 20, params.cfg_scale, 'euler', 'normal', positive, negative, latent, 1)
+    image2 = VAEDecode(latent, vae)
+    video = VHSVideoCombine(image2, 8, 0, 'final_output', 'image/gif', False, True, None, None)
     results = video.wait()._output
     import PIL
     final_video = PIL.Image.open(os.path.join("embedded_comfy/output", results['gifs'][0]['filename']))

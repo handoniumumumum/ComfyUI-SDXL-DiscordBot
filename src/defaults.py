@@ -92,7 +92,9 @@ VIDEO_GENERATION_DEFAULTS = ImageWorkflow(
     None,  # seed
     None,  # filename
     "video",  # slash_command
-    clip_skip=int(config["SDXL_GENERATION_DEFAULTS"]["CLIP_SKIP"]),  # clip_skip
+    min_cfg=float(config["VIDEO_GENERATION_DEFAULTS"]["MIN_CFG"]),
+    motion=int(config["VIDEO_GENERATION_DEFAULTS"]["MOTION"]),
+    augmentation=float(config["VIDEO_GENERATION_DEFAULTS"]["AUGMENTATION"]),
 )
 
 ADD_DETAIL_DEFAULTS = ImageWorkflow(

@@ -67,7 +67,17 @@ async def _do_image_mashup(params: ImageWorkflow, model_type: ModelType, loras: 
     return image_batch
 
 async def _do_video(params: ImageWorkflow, model_type: ModelType, loras: list[Lora]):
+    import PIL
+    with open(params.filename, "rb") as f:
+        image = PIL.Image.open(f)
+        width = PIL.Image.open(f).width
+        height = PIL.Image.open(f).height
+        padding = 0
+        if width / height <= 1:
+            padding = (height - width) // 2
+
     image = LoadImage(params.filename)[0]
+    image, _ = ImagePadForOutpaint(image, padding, 0, padding, 0, 40)
     model, clip_vision, vae = ImageOnlyCheckpointLoader(params.model)
     model = VideoLinearCFGGuidance(model, params.min_cfg)
     positive, negative, latent = SVDImg2vidConditioning(clip_vision, image, vae, 1024, 576, 25, params.motion, 6, params.augmentation)
@@ -75,7 +85,6 @@ async def _do_video(params: ImageWorkflow, model_type: ModelType, loras: list[Lo
     image2 = VAEDecode(latent, vae)
     video = VHSVideoCombine(image2, 8, 0, 'final_output', 'image/gif', False, True, None, None)
     results = video.wait()._output
-    import PIL
     final_video = PIL.Image.open(os.path.join("embedded_comfy/output", results['gifs'][0]['filename']))
     return [final_video]
 

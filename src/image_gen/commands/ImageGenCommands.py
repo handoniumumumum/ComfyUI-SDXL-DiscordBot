@@ -90,6 +90,13 @@ class ImageGenCommands:
             augmentation: Range[float, 0, 10] = None,
             seed: int = None,
         ):
+            if input_file.content_type not in ["image/png", "image/jpeg", "image/jpg"]:
+                await interaction.response.send_message(
+                    f"{interaction.user.mention} `Only PNG, JPG, and JPEG images are supported for video generation`",
+                    ephemeral=True,
+                )
+                return
+
             params = ImageWorkflow(
                 ModelType.VIDEO,
                 WorkflowType.video,
@@ -100,6 +107,8 @@ class ImageGenCommands:
                 cfg_scale=cfg_scale or VIDEO_GENERATION_DEFAULTS.cfg_scale,
                 seed=seed,
                 slash_command="video",
+                sampler=VIDEO_GENERATION_DEFAULTS.sampler,
+                scheduler=VIDEO_GENERATION_DEFAULTS.scheduler,
                 min_cfg=min_cfg or VIDEO_GENERATION_DEFAULTS.min_cfg,
                 motion=motion or VIDEO_GENERATION_DEFAULTS.motion,
                 augmentation=augmentation or VIDEO_GENERATION_DEFAULTS.augmentation,

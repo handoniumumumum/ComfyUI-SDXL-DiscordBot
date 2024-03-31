@@ -22,10 +22,26 @@ ASPECT_RATIO_CHOICES = [
     Choice(name="4:3 landscape", value="4:3 landscape"),
     Choice(name="16:9 landscape", value="16:9 landscape"),
 ]
-SD15_MODEL_CHOICES = [Choice(name=m.replace(".safetensors", ""), value=m) for m in models if "xl" not in m.lower()]
-SD15_LORA_CHOICES = [Choice(name=l.replace(".safetensors", ""), value=l) for l in loras if "xl" not in l.lower()]
-SDXL_MODEL_CHOICES = [Choice(name=m.replace(".safetensors", ""), value=m) for m in models if "xl" in m.lower() and "refiner" not in m.lower()]
-SDXL_LORA_CHOICES = [Choice(name=l.replace(".safetensors", ""), value=l) for l in loras if "xl" in l.lower()]
+
+def should_filter_model(m, command):
+    if "hidden" in m.lower():
+        return True
+    if "lightning" in m.lower():
+        return True
+    if "turbo" in m.lower():
+        return True
+    if command != "sdxl" and "xl" in m.lower():
+        return True
+    if command == "sdxl" and "xl" not in m.lower():
+        return True
+    if "refiner" in m.lower():
+        return True
+    return False
+
+SD15_MODEL_CHOICES = [Choice(name=m.replace(".safetensors", ""), value=m) for m in models if not should_filter_model(m, "15")]
+SD15_LORA_CHOICES = [Choice(name=l.replace(".safetensors", ""), value=l) for l in loras if not should_filter_model(l, "15")]
+SDXL_MODEL_CHOICES = [Choice(name=m.replace(".safetensors", ""), value=m) for m in models if not should_filter_model(m, "sdxl")]
+SDXL_LORA_CHOICES = [Choice(name=l.replace(".safetensors", ""), value=l) for l in loras if not should_filter_model(l, "sdxl")]
 SAMPLER_CHOICES = [Choice(name=s, value=s) for s in samplers]
 
 COMMAND_MODEL_CHOICES = {

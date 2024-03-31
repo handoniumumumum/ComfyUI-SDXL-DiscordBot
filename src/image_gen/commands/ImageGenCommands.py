@@ -189,7 +189,7 @@ class ImageGenCommands:
         params: ImageWorkflow,
     ):
         try:
-            if should_filter(params.prompt, params.negative_prompt):
+            if should_filter(params.prompt):
                 logger.info(
                     "Prompt or negative prompt contains a blocked word, not generating image. Prompt: %s, Negative Prompt: %s",
                     params.prompt,

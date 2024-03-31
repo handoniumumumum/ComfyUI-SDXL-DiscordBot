@@ -35,16 +35,15 @@ def setup_config():
     return token
 
 
-def should_filter(positive_prompt: str, negative_prompt: str) -> bool:
+def should_filter(positive_prompt: str) -> bool:
     positive_prompt = positive_prompt or ""
-    negative_prompt = negative_prompt or ""
 
     config = read_config()
     word_list = config["BLOCKED_WORDS"]["WORDS"].split(",")
     if word_list is None:
         return False
     for word in word_list:
-        if word.lower() in positive_prompt.lower() or word in negative_prompt.lower():
+        if word.lower() in positive_prompt.lower():
             return True
     return False
 
@@ -122,3 +121,8 @@ def get_server_address():
         return f"http://localhost:{config['EMBEDDED']['SERVER_PORT']}"
     else:
         return config['LOCAL']['SERVER_ADDRESS']
+
+def get_loras_from_prompt(prompt: str):
+    import re
+    loras = re.findall(r"<lora:(.*?):(.*?)>", prompt)
+    return [[lora[0], float(lora[1])] for lora in loras]

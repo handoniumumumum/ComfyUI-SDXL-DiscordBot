@@ -7,6 +7,7 @@ class ModelType(Enum):
     SDXL = "SDXL",
     CASCADE = "CASCADE",
     VIDEO = "VIDEO",
+    PONY = "PONY"
 
 class WorkflowType(Enum):
     txt2img = "txt2img",

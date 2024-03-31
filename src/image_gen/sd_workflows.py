@@ -80,6 +80,10 @@ class SDXLWorkflow(SDWorkflow):
         self.conditioning = CLIPTextEncodeSDXL(4096, 4096, 4096, 4096, 4096, 4096, positive_prompt, self.clip, positive_prompt)
         self.negative_conditioning = CLIPTextEncode(negative_prompt, self.clip)
 
+class PonyWorkflow(SDXLWorkflow):
+    def condition_prompts(self, positive_prompt: str, negative_prompt: str):
+        self.conditioning = CLIPTextEncodeSDXL(1024, 1024, 1024, 1024, 1024, 1024, positive_prompt, self.clip, positive_prompt)
+        self.negative_conditioning = CLIPTextEncode(negative_prompt, self.clip)
 
 class SDCascadeWorkflow(SDWorkflow):
     def _load_model(self, model_name: str, clip_skip: int, loras: Optional[list[Lora]] = None):

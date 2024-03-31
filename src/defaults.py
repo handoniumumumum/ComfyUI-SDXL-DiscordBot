@@ -98,6 +98,28 @@ VIDEO_GENERATION_DEFAULTS = ImageWorkflow(
     fps=int(config["VIDEO_GENERATION_DEFAULTS"]["FPS"]),
 )
 
+PONY_GENERATION_DEFAULTS = ImageWorkflow(
+    ModelType.SDXL,  # model_type
+    None,  # workflow type
+    None,  # prompt
+    None,  # negative_prompt
+    config["PONY_GENERATION_DEFAULTS"]["MODEL"],
+    None,  # loras
+    None,  # lora_strengths
+    config["PONY_GENERATION_DEFAULTS"]["ASPECT_RATIO"],  # aspect_ratio
+    config["PONY_GENERATION_DEFAULTS"]["SAMPLER"],
+    int(config["PONY_GENERATION_DEFAULTS"]["NUM_STEPS"]),
+    float(config["PONY_GENERATION_DEFAULTS"]["CFG_SCALE"]),
+    float(config["PONY_GENERATION_DEFAULTS"]["DENOISE_STRENGTH"]),
+    int(config["PONY_GENERATION_DEFAULTS"]["BATCH_SIZE"]),  # batch_size
+    None,  # seed
+    None,  # filename
+    "pony",  # slash_command
+    None,  # inpainting_prompt
+    int(config["PONY_GENERATION_DEFAULTS"]["INPAINTING_DETECTION_THRESHOLD"]),  # inpainting_detection_threshold
+    int(config["PONY_GENERATION_DEFAULTS"]["CLIP_SKIP"]),
+)
+
 ADD_DETAIL_DEFAULTS = ImageWorkflow(
     None,
     WorkflowType.add_detail,
@@ -117,6 +139,7 @@ COMMAND_DEFAULTS = {
     "imagine": SDXL_GENERATION_DEFAULTS,
     "sdxl": SDXL_GENERATION_DEFAULTS,
     "cascade": CASCADE_GENERATION_DEFAULTS,
+    "pony": PONY_GENERATION_DEFAULTS,
     "video": VIDEO_GENERATION_DEFAULTS,
     "add_detail": ADD_DETAIL_DEFAULTS,
     "upscale": UPSCALE_DEFAULTS,

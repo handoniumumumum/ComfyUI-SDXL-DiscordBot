@@ -19,11 +19,12 @@ class HelpCommands:
                 f"""Here are the commands:
 `/imagine` - Generate an image using SDXL. Fast
 `/sdxl` - Same as the above.
-`/cascade` - Use Stable Cascade to generate an image. Does text well, not a very dynamic model. Slow.
-`/video` - Create a video with an input image. Slow.
+`/cascade` - Use Stable Cascade to generate an image. Does text well. Use the two image inputs to do an image mashup!
+`/pony` - Use Pony Diffusion to generate an image. Based on SDXL.
+`/legacy` - Use SD 1.5 to generate an image.
+`/video` - Create a video with an input image.
 `/models` - List all available models.
 `/loras` - List all available Loras.
-Use these buttons to try each command.
 """,
                 ephemeral=True,
             )

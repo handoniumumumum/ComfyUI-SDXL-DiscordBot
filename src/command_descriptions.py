@@ -23,6 +23,7 @@ ASPECT_RATIO_CHOICES = [
     Choice(name="16:9 landscape", value="16:9 landscape"),
 ]
 
+
 def should_filter_model(m, command):
     if "hidden" in m.lower():
         return True
@@ -36,22 +37,29 @@ def should_filter_model(m, command):
         return True
     if "refiner" in m.lower():
         return True
+    if command.lower() != "sdxl" and command.lower() not in m.lower():
+        return True
     return False
+
 
 SD15_MODEL_CHOICES = [Choice(name=m.replace(".safetensors", ""), value=m) for m in models if not should_filter_model(m, "15")]
 SD15_LORA_CHOICES = [Choice(name=l.replace(".safetensors", ""), value=l) for l in loras if not should_filter_model(l, "15")]
 SDXL_MODEL_CHOICES = [Choice(name=m.replace(".safetensors", ""), value=m) for m in models if not should_filter_model(m, "sdxl")]
 SDXL_LORA_CHOICES = [Choice(name=l.replace(".safetensors", ""), value=l) for l in loras if not should_filter_model(l, "sdxl")]
+PONY_MODEL_CHOICES = [Choice(name=m.replace(".safetensors", ""), value=m) for m in models if not should_filter_model(m, "pony")]
+PONY_LORA_CHOICES = [Choice(name=l.replace(".safetensors", ""), value=l) for l in loras if not should_filter_model(l, "pony")]
 SAMPLER_CHOICES = [Choice(name=s, value=s) for s in samplers]
 
 COMMAND_MODEL_CHOICES = {
     "sdxl": SDXL_MODEL_CHOICES,
     "legacy": SD15_MODEL_CHOICES,
+    "pony": PONY_MODEL_CHOICES,
 }
 
 COMMAND_LORA_CHOICES = {
     "sdxl": SDXL_LORA_CHOICES,
     "legacy": SD15_LORA_CHOICES,
+    "pony": PONY_LORA_CHOICES,
 }
 
 BASE_ARG_DESCS = {
@@ -86,14 +94,13 @@ SDXL_ARG_DESCS = {
     "inpainting_detection_threshold": f"range [0, 255], default {SDXL_GENERATION_DEFAULTS.inpainting_detection_threshold}; Detection threshold for inpainting. Only works when inpainting_prompt is set",
     "clip_skip": f"default: {SDXL_GENERATION_DEFAULTS.clip_skip}",
 }
-VIDEO_ARG_DESCS = ({
-                   "input_file": "Starting image for video generation",
-                    "cfg_scale": f"range [1.0, {MAX_CFG}]; Degree to which AI should adhere to the starting image. Default: {VIDEO_GENERATION_DEFAULTS.cfg_scale}",
-                    "min_cfg": f"Starting CFG value. Generation will move to CFG_SCALE over the length of the video. Default: {VIDEO_GENERATION_DEFAULTS.min_cfg}",
-                    "motion": f"The amount of motion in the video. Default: {VIDEO_GENERATION_DEFAULTS.motion}",
-                    "augmentation": f"How much the video will differ from your starting image. Introduces a lot of noise. Default: {VIDEO_GENERATION_DEFAULTS.augmentation}",
-                  }
-                )
+VIDEO_ARG_DESCS = {
+    "input_file": "Starting image for video generation",
+    "cfg_scale": f"range [1.0, {MAX_CFG}]; Degree to which AI should adhere to the starting image. Default: {VIDEO_GENERATION_DEFAULTS.cfg_scale}",
+    "min_cfg": f"Starting CFG value. Generation will move to CFG_SCALE over the length of the video. Default: {VIDEO_GENERATION_DEFAULTS.min_cfg}",
+    "motion": f"The amount of motion in the video. Default: {VIDEO_GENERATION_DEFAULTS.motion}",
+    "augmentation": f"How much the video will differ from your starting image. Introduces a lot of noise. Default: {VIDEO_GENERATION_DEFAULTS.augmentation}",
+}
 
 CASCADE_ARG_DESCS = {
     **BASE_ARG_DESCS,
@@ -106,7 +113,9 @@ CASCADE_ARG_DESCS = {
     "inpainting_prompt": "Detection prompt for inpainting; examples: 'background' or 'person'",
     "inpainting_detection_threshold": f"range [0, 255], default {CASCADE_GENERATION_DEFAULTS.inpainting_detection_threshold}; Detection threshold for inpainting. Only works when inpainting_prompt is set",
     "clip_skip": f"default: {CASCADE_GENERATION_DEFAULTS.clip_skip}",
- }
+}
+
+PONY_ARG_DESCS = {**SDXL_ARG_DESCS}
 
 BASE_ARG_CHOICES = {
     "aspect_ratio": ASPECT_RATIO_CHOICES,
@@ -124,7 +133,14 @@ SDXL_ARG_CHOICES = {
     "lora2": SDXL_LORA_CHOICES[:25],
     **BASE_ARG_CHOICES,
 }
-CASCADE_ARG_CHOICES= {
+CASCADE_ARG_CHOICES = {
     "aspect_ratio": ASPECT_RATIO_CHOICES,
 }
 VIDEO_ARG_CHOICES = {k: v for k, v in IMAGINE_ARG_CHOICES.items() if k not in {"lora2", "lora3", "aspect_ratio"}}
+
+PONY_ARG_CHOICES = {
+    "model": PONY_MODEL_CHOICES[:25],
+    "lora": PONY_LORA_CHOICES[:25],
+    "lora2": PONY_LORA_CHOICES[:25],
+    **BASE_ARG_CHOICES,
+}

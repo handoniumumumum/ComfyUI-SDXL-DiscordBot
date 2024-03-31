@@ -22,11 +22,21 @@ ASPECT_RATIO_CHOICES = [
     Choice(name="4:3 landscape", value="4:3 landscape"),
     Choice(name="16:9 landscape", value="16:9 landscape"),
 ]
-SD15_MODEL_CHOICES = [Choice(name=m.replace(".safetensors", ""), value=m) for m in models if "xl" not in m.lower()][:25]
-SD15_LORA_CHOICES = [Choice(name=l.replace(".safetensors", ""), value=l) for l in loras if "xl" not in l.lower()][:25]
-SDXL_MODEL_CHOICES = [Choice(name=m.replace(".safetensors", ""), value=m) for m in models if "xl" in m.lower() and "refiner" not in m.lower()][:25]
-SDXL_LORA_CHOICES = [Choice(name=l.replace(".safetensors", ""), value=l) for l in loras if "xl" in l.lower()][:25]
+SD15_MODEL_CHOICES = [Choice(name=m.replace(".safetensors", ""), value=m) for m in models if "xl" not in m.lower()]
+SD15_LORA_CHOICES = [Choice(name=l.replace(".safetensors", ""), value=l) for l in loras if "xl" not in l.lower()]
+SDXL_MODEL_CHOICES = [Choice(name=m.replace(".safetensors", ""), value=m) for m in models if "xl" in m.lower() and "refiner" not in m.lower()]
+SDXL_LORA_CHOICES = [Choice(name=l.replace(".safetensors", ""), value=l) for l in loras if "xl" in l.lower()]
 SAMPLER_CHOICES = [Choice(name=s, value=s) for s in samplers]
+
+COMMAND_MODEL_CHOICES = {
+    "sdxl": SDXL_MODEL_CHOICES,
+    "legacy": SD15_MODEL_CHOICES,
+}
+
+COMMAND_LORA_CHOICES = {
+    "sdxl": SDXL_LORA_CHOICES,
+    "legacy": SD15_LORA_CHOICES,
+}
 
 BASE_ARG_DESCS = {
     "prompt": "Prompt for the image being generated",
@@ -87,15 +97,15 @@ BASE_ARG_CHOICES = {
     "sampler": SAMPLER_CHOICES,
 }
 IMAGINE_ARG_CHOICES = {
-    "model": SD15_MODEL_CHOICES,
-    "lora": SD15_LORA_CHOICES,
-    "lora2": SD15_LORA_CHOICES,
+    "model": SD15_MODEL_CHOICES[:25],
+    "lora": SD15_LORA_CHOICES[:25],
+    "lora2": SD15_LORA_CHOICES[:25],
     **BASE_ARG_CHOICES,
 }
 SDXL_ARG_CHOICES = {
-    "model": SDXL_MODEL_CHOICES,
-    "lora": SDXL_LORA_CHOICES,
-    "lora2": SDXL_LORA_CHOICES,
+    "model": SDXL_MODEL_CHOICES[:25],
+    "lora": SDXL_LORA_CHOICES[:25],
+    "lora2": SDXL_LORA_CHOICES[:25],
     **BASE_ARG_CHOICES,
 }
 CASCADE_ARG_CHOICES= {

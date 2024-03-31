@@ -112,3 +112,12 @@ UPSCALE_DEFAULTS = ImageWorkflow(
     None,
     model=config["UPSCALE_DEFAULTS"]["MODEL"],
 )
+
+COMMAND_DEFAULTS = {
+    "imagine": SDXL_GENERATION_DEFAULTS,
+    "sdxl": SDXL_GENERATION_DEFAULTS,
+    "cascade": CASCADE_GENERATION_DEFAULTS,
+    "video": VIDEO_GENERATION_DEFAULTS,
+    "add_detail": ADD_DETAIL_DEFAULTS,
+    "upscale": UPSCALE_DEFAULTS,
+}

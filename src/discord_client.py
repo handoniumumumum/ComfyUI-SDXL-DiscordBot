@@ -28,6 +28,10 @@ async def on_ready():
     commands.append(ImageGenCommands(tree))
     commands.append(SDXLCommand(tree, "sdxl"))
     commands.append(SDXLCommand(tree, "imagine"))
+    from src.generic_commands import HelpCommands
+    commands.append(HelpCommands(tree))
+    from src.generic_commands import InfoCommands
+    commands.append(InfoCommands(tree))
 
     for command in commands:
         command.add_commands()

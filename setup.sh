@@ -91,6 +91,14 @@ fi
 cd ComfyUI-Advanced-ControlNet
 pip install -r requirements.txt -U --extra-index-url %TORCH_CUDA_INDEX_URL%
 
+cd "$EMBEDDED_COMFY_LOCATION/custom_nodes"
+if [ ! -d comfy_controlnet_preprocessors ]; then
+  git clone https://github.com/Fannovel16/comfy_controlnet_preprocessors.git
+  echo "cloned comfy_controlnet_preprocessors"
+fi
+cd comfy_controlnet_preprocessors
+pip install -r requirements.txt -U --extra-index-url %TORCH_CUDA_INDEX_URL%
+
 cd "$EMBEDDED_COMFY_LOCATION/models/checkpoints"
 mkdir -p xl 15 cascade pony svd
 

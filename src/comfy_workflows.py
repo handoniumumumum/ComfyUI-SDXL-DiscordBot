@@ -14,7 +14,7 @@ comfy_root_directory = config["LOCAL"]["COMFY_ROOT_DIR"]
 
 
 async def _do_txt2img(params: ImageWorkflow, model_type: ModelType, loras: list[Lora]):
-    workflow = model_type_to_workflow[model_type](params.model, params.clip_skip, loras)
+    workflow = model_type_to_workflow[model_type](params.model, params.clip_skip, loras, params.vae)
     workflow.create_latents(params.dimensions, params.batch_size)
     workflow.condition_prompts(params.prompt, params.negative_prompt or "")
     workflow.sample(params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler or "normal")
@@ -25,7 +25,7 @@ async def _do_txt2img(params: ImageWorkflow, model_type: ModelType, loras: list[
 
 
 async def _do_img2img(params: ImageWorkflow, model_type: ModelType, loras: list[Lora]):
-    workflow = model_type_to_workflow[model_type](params.model, params.clip_skip, loras)
+    workflow = model_type_to_workflow[model_type](params.model, params.clip_skip, loras, params.vae)
     image_input = LoadImage(params.filename)[0]
     workflow.create_img2img_latents(image_input, params.batch_size)
     if params.inpainting_prompt:
@@ -48,7 +48,7 @@ async def _do_upscale(params: ImageWorkflow, model_type: ModelType, loras: list[
 
 
 async def _do_add_detail(params: ImageWorkflow, model_type: ModelType, loras: list[Lora]):
-    workflow = model_type_to_workflow[model_type](params.model, params.clip_skip, loras)
+    workflow = model_type_to_workflow[model_type](params.model, params.clip_skip, loras, params.vae)
     image_input = LoadImage(params.filename)[0]
     workflow.create_img2img_latents(image_input, params.batch_size)
     workflow.condition_prompts(params.prompt, params.negative_prompt or "")
@@ -60,7 +60,7 @@ async def _do_add_detail(params: ImageWorkflow, model_type: ModelType, loras: li
 
 
 async def _do_image_mashup(params: ImageWorkflow, model_type: ModelType, loras: list[Lora]):
-    workflow = model_type_to_workflow[model_type](params.model, params.clip_skip, loras)
+    workflow = model_type_to_workflow[model_type](params.model, params.clip_skip, loras, params.vae)
     image_inputs = [LoadImage(filename)[0] for filename in [params.filename, params.filename2]]
     workflow.create_latents(params.dimensions, params.batch_size)
     workflow.condition_prompts(params.prompt, params.negative_prompt or "")
@@ -110,6 +110,11 @@ workflow_type_to_method = {
 
 
 async def do_workflow(params: ImageWorkflow):
+    if params.style_prompt is not None and params.style_prompt not in params.prompt:
+        params.prompt = params.style_prompt + "\n" + params.prompt
+    if params.negative_style_prompt is not None and params.negative_style_prompt not in params.negative_prompt:
+        params.negative_prompt = params.negative_style_prompt + "\n" + params.negative_prompt
+
     loras = [Lora(lora, strength) for lora, strength in zip(params.loras, params.lora_strengths)] if params.loras else []
 
     extra_loras = get_loras_from_prompt(params.prompt)

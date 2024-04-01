@@ -58,6 +58,23 @@ SCHEDULER=simple
 ASPECT_RATIO=1:1
 DENOISE_STRENGTH=0.8
 
+[PONY_GENERATION_DEFAULTS]
+MODEL=pony/ponyDiffusionV6.safetensors
+NUM_STEPS=12
+CFG_SCALE=2.0
+BATCH_SIZE=4
+ASPECT_RATIO=1:1
+DENOISE_STRENGTH=0.8
+SAMPLER=euler_ancestral
+INPAINTING_DETECTION_THRESHOLD=200
+CLIP_SKIP=-2
+ACCELERATOR_ENABLED=False
+ACCELERATOR_LORA_NAME=xl/sdxl_lightning_4step_lora.safetensors
+SCHEDULER=normal
+DEFAULT_STYLE_PROMPT=score_9, score_8_up, score_7_up, score_6_up, score_5_up
+DEFAULT_NEGATIVE_STYLE_PROMPT=worst quality, bad quality, low quality, deformed, blurry, censored, bad anatomy, watermark, signature, bad artist, lowres, missing limbs, missing hands, missing fingers, extra fingers, extra hands, extra digits, malformed face, loli, kid, kids, children
+VAE=pony/pony_vae.safetensors
+
 [ADD_DETAIL_DEFAULTS]
 DENOISE_STRENGTH=0.4
 BATCH_SIZE=1

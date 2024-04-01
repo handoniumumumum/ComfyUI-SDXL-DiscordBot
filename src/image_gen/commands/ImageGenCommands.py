@@ -293,6 +293,7 @@ class SDXLCommand(ImageGenCommands):
                     else None
                 ),
                 scheduler=defaults.scheduler,
+                style_prompt=defaults.style_prompt,
             )
 
             await self._do_request(

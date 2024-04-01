@@ -16,11 +16,13 @@ class Lora:
 
 
 class SDWorkflow:
-    def __init__(self, model_name: str, clip_skip: int, loras: Optional[list[Lora]] = None):
+    def __init__(self, model_name: str, clip_skip: int, loras: Optional[list[Lora]] = None, vae_name: Optional[str] = None):
         self._load_model(model_name, clip_skip, loras)
 
-    def _load_model(self, model_name: str, clip_skip: int, loras: Optional[list[Lora]] = None):
+    def _load_model(self, model_name: str, clip_skip: int, loras: Optional[list[Lora]] = None, vae_name: Optional[str] = None):
         model, clip, vae = CheckpointLoaderSimple(model_name)
+        if vae_name is not None:
+            vae = VAELoader(vae_name)
         if loras:
             for lora in loras:
                 if lora.name == None or lora.name == "None":
@@ -86,7 +88,7 @@ class PonyWorkflow(SDXLWorkflow):
         self.negative_conditioning = CLIPTextEncode(negative_prompt, self.clip)
 
 class SDCascadeWorkflow(SDWorkflow):
-    def _load_model(self, model_name: str, clip_skip: int, loras: Optional[list[Lora]] = None):
+    def _load_model(self, model_name: str, clip_skip: int, loras: Optional[list[Lora]] = None, vae_name: Optional[str] = None):
         self.model, self.clip, self.stage_c_vae, self.clip_vision = UnCLIPCheckpointLoader(model_name)
         self.stage_b_model, self.stage_b_clip, self.vae = CheckpointLoaderSimple(Checkpoints.cascade_stable_cascade_stage_b)
 

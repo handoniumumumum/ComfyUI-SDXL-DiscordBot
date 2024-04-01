@@ -59,3 +59,6 @@ class ImageWorkflow:
     motion: Optional[int] = None
     augmentation: Optional[float] = None
     fps: Optional[int] = None
+    style_prompt: Optional[str] = None
+    negative_style_prompt: Optional[str] = None
+    vae: Optional[str] = None

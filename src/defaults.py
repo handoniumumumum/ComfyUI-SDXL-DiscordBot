@@ -51,6 +51,8 @@ SDXL_GENERATION_DEFAULTS = ImageWorkflow(
     config["SDXL_GENERATION_DEFAULTS"]["ACCELERATOR_ENABLED"],
     config["SDXL_GENERATION_DEFAULTS"]["ACCELERATOR_LORA_NAME"],
     config["SDXL_GENERATION_DEFAULTS"]["SCHEDULER"],
+    style_prompt=config["SDXL_GENERATION_DEFAULTS"]["DEFAULT_STYLE_PROMPT"],
+    negative_style_prompt=config["SDXL_GENERATION_DEFAULTS"]["DEFAULT_NEGATIVE_STYLE_PROMPT"]
 )
 
 CASCADE_GENERATION_DEFAULTS = ImageWorkflow(
@@ -118,6 +120,9 @@ PONY_GENERATION_DEFAULTS = ImageWorkflow(
     None,  # inpainting_prompt
     int(config["PONY_GENERATION_DEFAULTS"]["INPAINTING_DETECTION_THRESHOLD"]),  # inpainting_detection_threshold
     int(config["PONY_GENERATION_DEFAULTS"]["CLIP_SKIP"]),
+    style_prompt=config["PONY_GENERATION_DEFAULTS"]["DEFAULT_STYLE_PROMPT"],
+    negative_style_prompt=config["PONY_GENERATION_DEFAULTS"]["DEFAULT_NEGATIVE_STYLE_PROMPT"],
+    vae=config["PONY_GENERATION_DEFAULTS"]["VAE"],
 )
 
 ADD_DETAIL_DEFAULTS = ImageWorkflow(

@@ -124,7 +124,6 @@ class Buttons(discord.ui.View, EditableButton, RerollableButton, DeletableButton
         self.author = author
         self.command = command
 
-        self.is_sdxl = command == "sdxl"
         self.is_video = command == "video"
 
         # upscaling/alternative buttons not needed for video
@@ -163,7 +162,7 @@ class Buttons(discord.ui.View, EditableButton, RerollableButton, DeletableButton
         params = deepcopy(self.params)
         params.workflow_type = WorkflowType.img2img
         params.seed = random.randint(0, 999999999999999)
-        params.denoise_strength = SDXL_GENERATION_DEFAULTS.denoise_strength if self.is_sdxl else SD15_GENERATION_DEFAULTS.denoise_strength
+        params.denoise_strength = SDXL_GENERATION_DEFAULTS.denoise_strength if self.params.model_type == ModelType.SDXL else SD15_GENERATION_DEFAULTS.denoise_strength
 
         # TODO: should alternatives use num_steps and cfg_scale from original?
         # Buttons should probably still receive these params for rerolls
@@ -197,7 +196,7 @@ class Buttons(discord.ui.View, EditableButton, RerollableButton, DeletableButton
         upscaled_image_path = f"./out/upscaledImage_{timestamp}.png"
         upscaled_image.save(upscaled_image_path)
         final_message = f"{interaction.user.mention} here is your upscaled image"
-        buttons = AddDetailButtons(params, upscaled_image, is_sdxl=self.is_sdxl, author=interaction.user)
+        buttons = AddDetailButtons(params, upscaled_image, author=interaction.user)
         fp = f"{get_filename(interaction, self.params)}_{index}.png"
         await interaction.channel.send(
             content=final_message,
@@ -216,11 +215,10 @@ class Buttons(discord.ui.View, EditableButton, RerollableButton, DeletableButton
 
 
 class AddDetailButtons(discord.ui.View, DeletableButton, InfoableButton):
-    def __init__(self, params, images, *, timeout=None, is_sdxl=False, author=None):
+    def __init__(self, params, images, *, timeout=None, author=None):
         super().__init__(timeout=timeout)
         self.params = params
         self.images = images
-        self.is_sdxl = is_sdxl
         self.author = author
 
         if self.params.inpainting_prompt is None:
@@ -250,11 +248,10 @@ class AddDetailButtons(discord.ui.View, DeletableButton, InfoableButton):
                                        )
 
 class FinalDetailButtons(discord.ui.View, DeletableButton, InfoableButton):
-    def __init__(self, params, images, *, timeout=None, is_sdxl=False, author=None):
+    def __init__(self, params, images, *, timeout=None, author=None):
         super().__init__(timeout=timeout)
         self.params = params
         self.images = images
-        self.is_sdxl = is_sdxl
         self.author = author
 
 class EditModal(ui.Modal, title="Edit Image"):
@@ -263,7 +260,6 @@ class EditModal(ui.Modal, title="Edit Image"):
         self.params = params
         self.command = command
 
-        self.is_sdxl = command == "sdxl"
         self.is_video = command == "video"
 
         self.prompt = ui.TextInput(label="Prompt",

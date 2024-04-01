@@ -56,6 +56,9 @@ class SDWorkflow:
         self.conditioning = CLIPTextEncode(positive_prompt, self.clip)
         self.negative_conditioning = CLIPTextEncode(negative_prompt, self.clip)
 
+    def condition_for_detailing(self, controlnet_name, image):
+        pass
+
     def mask_for_inpainting(self, image_input: Image, inpainting_prompt: str, threshold: float):
         clip_seg_model = CLIPSegModelLoader("CIDAS/clipseg-rd64-refined")
         masking, _ = CLIPSegMasking(image_input, inpainting_prompt, clip_seg_model)
@@ -81,6 +84,13 @@ class SDXLWorkflow(SDWorkflow):
     def condition_prompts(self, positive_prompt: str, negative_prompt: str):
         self.conditioning = CLIPTextEncodeSDXL(4096, 4096, 4096, 4096, 4096, 4096, positive_prompt, self.clip, positive_prompt)
         self.negative_conditioning = CLIPTextEncode(negative_prompt, self.clip)
+
+    def condition_for_detailing(self, controlnet_name, image):
+        if controlnet_name is None or controlnet_name == "":
+            return
+        preprocessed_image = TilePreprocessor(image, 1)
+        controlnet = ControlNetLoaderAdvanced(controlnet_name)
+        self.conditioning, self.negative_conditioning, _ = ACNAdvancedControlNetApply(self.conditioning, self.negative_conditioning, controlnet, preprocessed_image, model_optional=self.model)
 
 class PonyWorkflow(SDXLWorkflow):
     def condition_prompts(self, positive_prompt: str, negative_prompt: str):

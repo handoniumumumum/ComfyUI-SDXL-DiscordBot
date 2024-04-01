@@ -75,20 +75,40 @@ IF NOT EXIST %EMBEDDED_COMFY_LOCATION%/ComfyUI-VideoHelperSuite (
 cd %EMBEDDED_COMFY_LOCATION%/ComfyUI-VideoHelperSuite
 python -m pip install -r requirements.txt -U --extra-index-url %TORCH_CUDA_INDEX_URL%
 
+cd %EMBEDDED_COMFY_LOCATION%\custom_nodes
+IF NOT EXIST ComfyUI-Advanced-ControlNet (
+    git clone https://github.com/Kosinkadink/ComfyUI-Advanced-ControlNet.git
+    echo cloned ComfyUI-Advanced-ControlNet
+)
+cd ComfyUI-Advanced-ControlNet
+python -m pip install -r requirements.txt -U --extra-index-url %TORCH_CUDA_INDEX_URL%
+
+cd %EMBEDDED_COMFY_LOCATION%\custom_nodes
+IF NOT EXIST comfy_controlnet_preprocessors (
+    git clone https://github.com/Fannovel16/comfy_controlnet_preprocessors.git
+    echo cloned comfy_controlnet_preprocessors
+)
+cd comfy_controlnet_preprocessors
+python -m pip install -r requirements.txt -U --extra-index-url %TORCH_CUDA_INDEX_URL%
+
 cd %EMBEDDED_COMFY_LOCATION%/models/checkpoints
 mkdir xl
 mkdir 15
 mkdir cascade
+mkdir pony
+mkdir svd
 
 cd %EMBEDDED_COMFY_LOCATION%/models/loras
 mkdir xl
 mkdir 15
 mkdir cascade
+mkdir pony
 
 cd %EMBEDDED_COMFY_LOCATION%/models/controlnet
 mkdir xl
 mkdir 15
 mkdir cascade
+mkdir pony
 
 cd %EMBEDDED_COMFY_LOCATION%
 python main.py --quick-test-for-ci

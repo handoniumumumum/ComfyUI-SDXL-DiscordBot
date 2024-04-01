@@ -294,6 +294,7 @@ class SDXLCommand(ImageGenCommands):
                 ),
                 scheduler=defaults.scheduler,
                 style_prompt=defaults.style_prompt,
+                detailing_controlnet=defaults.detailing_controlnet,
             )
 
             await self._do_request(

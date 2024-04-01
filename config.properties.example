@@ -24,6 +24,9 @@ CLIP_SKIP=-2
 ACCELERATOR_ENABLED=True
 ACCELERATOR_LORA_NAME=xl\sdxl_lightning_4step_lora.safetensors
 SCHEDULER=sgm_uniform
+DEFAULT_STYLE_PROMPT=
+DEFAULT_NEGATIVE_STYLE_PROMPT=
+DETAILING_CONTROLNET=XL/controlllite_xl_tile_realistic.safetensors
 
 [SD15_GENERATION_DEFAULTS]
 MODEL=rundiffusionFX_v10.safetensors
@@ -74,10 +77,13 @@ SCHEDULER=normal
 DEFAULT_STYLE_PROMPT=score_9, score_8_up, score_7_up, score_6_up, score_5_up
 DEFAULT_NEGATIVE_STYLE_PROMPT=worst quality, bad quality, low quality, deformed, blurry, censored, bad anatomy, watermark, signature, bad artist, lowres, missing limbs, missing hands, missing fingers, extra fingers, extra hands, extra digits, malformed face, loli, kid, kids, children
 VAE=pony/pony_vae.safetensors
+DETAILING_CONTROLNET=pony/bdsqlsz_controlllite_xl_tile_anime.safetensors
 
 [ADD_DETAIL_DEFAULTS]
 DENOISE_STRENGTH=0.4
 BATCH_SIZE=1
+DETAILING_CONTROLNET_STRENGTH=1.0
+DETAILING_CONTROLNET_END_PERCENT=0.8
 
 [UPSCALE_DEFAULTS]
 MODEL=RealESRGAN_x4plus.pth

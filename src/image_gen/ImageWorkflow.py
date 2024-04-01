@@ -62,3 +62,6 @@ class ImageWorkflow:
     style_prompt: Optional[str] = None
     negative_style_prompt: Optional[str] = None
     vae: Optional[str] = None
+    detailing_controlnet: Optional[str] = None
+    detailing_controlnet_strength: Optional[float] = None
+    detailing_controlnet_end_percent: Optional[float] = None

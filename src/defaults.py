@@ -52,7 +52,8 @@ SDXL_GENERATION_DEFAULTS = ImageWorkflow(
     config["SDXL_GENERATION_DEFAULTS"]["ACCELERATOR_LORA_NAME"],
     config["SDXL_GENERATION_DEFAULTS"]["SCHEDULER"],
     style_prompt=config["SDXL_GENERATION_DEFAULTS"]["DEFAULT_STYLE_PROMPT"],
-    negative_style_prompt=config["SDXL_GENERATION_DEFAULTS"]["DEFAULT_NEGATIVE_STYLE_PROMPT"]
+    negative_style_prompt=config["SDXL_GENERATION_DEFAULTS"]["DEFAULT_NEGATIVE_STYLE_PROMPT"],
+    detailing_controlnet=config["SDXL_GENERATION_DEFAULTS"]["DETAILING_CONTROLNET"]
 )
 
 CASCADE_GENERATION_DEFAULTS = ImageWorkflow(
@@ -123,6 +124,7 @@ PONY_GENERATION_DEFAULTS = ImageWorkflow(
     style_prompt=config["PONY_GENERATION_DEFAULTS"]["DEFAULT_STYLE_PROMPT"],
     negative_style_prompt=config["PONY_GENERATION_DEFAULTS"]["DEFAULT_NEGATIVE_STYLE_PROMPT"],
     vae=config["PONY_GENERATION_DEFAULTS"]["VAE"],
+    detailing_controlnet=config["PONY_GENERATION_DEFAULTS"]["DETAILING_CONTROLNET"],
 )
 
 ADD_DETAIL_DEFAULTS = ImageWorkflow(
@@ -131,6 +133,8 @@ ADD_DETAIL_DEFAULTS = ImageWorkflow(
     None,
     denoise_strength=float(config["ADD_DETAIL_DEFAULTS"]["DENOISE_STRENGTH"]),
     batch_size=int(config["ADD_DETAIL_DEFAULTS"]["BATCH_SIZE"]),
+    detailing_controlnet_strength=float(config["ADD_DETAIL_DEFAULTS"]["DETAILING_CONTROLNET_STRENGTH"]),
+    detailing_controlnet_end_percent=float(config["ADD_DETAIL_DEFAULTS"]["DETAILING_CONTROLNET_END_PERCENT"]),
 )
 
 UPSCALE_DEFAULTS = ImageWorkflow(

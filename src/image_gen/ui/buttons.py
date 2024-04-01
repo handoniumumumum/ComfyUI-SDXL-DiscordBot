@@ -231,6 +231,8 @@ class AddDetailButtons(discord.ui.View, DeletableButton, InfoableButton):
         params = deepcopy(self.params)
         params.workflow_type = WorkflowType.add_detail
         params.denoise_strength = ADD_DETAIL_DEFAULTS.denoise_strength
+        params.detailing_controlnet_strength = ADD_DETAIL_DEFAULTS.detailing_controlnet_strength
+        params.detailing_controlnet_end_percent = ADD_DETAIL_DEFAULTS.detailing_controlnet_end_percent
         params.seed = random.randint(0, 999999999999999)
         params.batch_size = 1
 

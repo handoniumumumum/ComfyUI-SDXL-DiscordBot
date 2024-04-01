@@ -72,9 +72,10 @@ if [ ! -d ComfyUI-VideoHelperSuite ]; then
   git clone https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git
   echo "cloned ComfyUI-VideoHelperSuite"
 fi
-cd ComfyUI-VideoHelperSuite
-pip install -r requirements.txt -U --extra-index-url %TORCH_CUDA_INDEX_URL%
+cd "$EMBEDDED_COMFY_LOCATION/ComfyUI-VideoHelperSuite"
+pip install -r requirements.txt -U
 
+cd "$EMBEDDED_COMFY_LOCATION/custom_nodes"
 if [ ! -d ComfyUI-audio ]; then
   git clone https://github.com/eigenpunk/ComfyUI-audio.git
   echo "cloned ComfyUI-audio"
@@ -82,17 +83,22 @@ fi
 cd ComfyUI-audio
 pip install -r requirements.txt -U --extra-index-url %TORCH_CUDA_INDEX_URL%
 
-cd "$EMBEDDED_COMFY_LOCATION/ComfyUI-VideoHelperSuite"
-pip install -r requirements.txt -U
+cd "$EMBEDDED_COMFY_LOCATION/custom_nodes"
+if [ ! -d ComfyUI-Advanced-ControlNet ]; then
+  git clone https://github.com/Kosinkadink/ComfyUI-Advanced-ControlNet.git
+  echo "cloned ComfyUI-Advanced-ControlNet"
+fi
+cd ComfyUI-Advanced-ControlNet
+pip install -r requirements.txt -U --extra-index-url %TORCH_CUDA_INDEX_URL%
 
 cd "$EMBEDDED_COMFY_LOCATION/models/checkpoints"
-mkdir -p xl 15 cascade
+mkdir -p xl 15 cascade pony svd
 
 cd "$EMBEDDED_COMFY_LOCATION/models/loras"
-mkdir -p xl 15 cascade
+mkdir -p xl 15 cascade pony
 
 cd "$EMBEDDED_COMFY_LOCATION/models/controlnet"
-mkdir -p xl 15 cascade
+mkdir -p xl 15 cascade pony
 
 cd "$EMBEDDED_COMFY_LOCATION"
 python main.py --quick-test-for-ci

@@ -52,6 +52,7 @@ async def _do_add_detail(params: ImageWorkflow, model_type: ModelType, loras: li
     image_input = LoadImage(params.filename)[0]
     workflow.create_img2img_latents(image_input, params.batch_size)
     workflow.condition_prompts(params.prompt, params.negative_prompt or "")
+    workflow.condition_for_detailing(params.detailing_controlnet, image_input)
     workflow.sample(params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler or "normal", params.denoise_strength)
     images = workflow.decode_and_save("final_output")
     results = await images._wait()

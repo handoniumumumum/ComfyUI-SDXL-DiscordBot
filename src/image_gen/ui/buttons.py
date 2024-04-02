@@ -1,3 +1,4 @@
+import asyncio
 import os
 import random
 from copy import deepcopy
@@ -18,12 +19,20 @@ from src.util import get_filename, build_command
 class EditableButton:
     @discord.ui.button(label="Edit", style=discord.ButtonStyle.blurple, emoji="📝", row=0)
     async def edit_image(self, interaction, button):
+        task = asyncio.create_task(self._edit_image(interaction, button))
+        await task
+
+    async def _edit_image(self, interaction, button):
         modal = EditModal(self.params, self.command)
         await interaction.response.send_modal(modal)
 
 class RerollableButton:
     @discord.ui.button(label="Re-roll", style=discord.ButtonStyle.green, emoji="🎲", row=0)
     async def reroll_image(self, interaction, btn):
+        task = asyncio.create_task(self._reroll_image(interaction, btn))
+        await task
+
+    async def _reroll_image(self, interaction, btn):
         await interaction.response.send_message(
             f'{interaction.user.mention} asked me to re-imagine "{self.params.prompt}", this shouldn\'t take too long...'
         )
@@ -59,6 +68,10 @@ class DeletableButton:
 
     @discord.ui.button(label="Delete", style=discord.ButtonStyle.red, emoji="🗑️", row=1)
     async def delete_image_post(self, interaction, button):
+        task = asyncio.create_task(self._delete_image_post(interaction, button))
+        await task
+
+    async def _delete_image_post(self, interaction, button):
         if interaction.user.id != self.author.id:
             return
 
@@ -67,6 +80,10 @@ class DeletableButton:
 class InfoableButton:
     @discord.ui.button(label="Info", style=discord.ButtonStyle.blurple, emoji="ℹ️", row=1)
     async def image_info(self, interaction, button):
+        task = asyncio.create_task(self._image_info(interaction, button))
+        await task
+
+    async def _image_info(self, interaction, button):
         params = self.params
         info_str = (
             f"prompt: {params.prompt}\n"
@@ -156,6 +173,10 @@ class Buttons(discord.ui.View, EditableButton, RerollableButton, DeletableButton
             self.add_item(btn)
 
     async def generate_alternatives_and_send(self, interaction, button):
+        task = asyncio.create_task(self._generate_alternatives_and_send(interaction, button))
+        await task
+
+    async def _generate_alternatives_and_send(self, interaction, button):
         index = int(button.label[1:]) - 1  # Extract index from label
         await interaction.response.send_message(f"{interaction.user.mention} asked for some alternatives of image #{index + 1}, this shouldn't take too long...")
 
@@ -181,6 +202,10 @@ class Buttons(discord.ui.View, EditableButton, RerollableButton, DeletableButton
         )
 
     async def upscale_and_send(self, interaction, button):
+        task = asyncio.create_task(self._upscale_and_send(interaction, button))
+        await task
+
+    async def _upscale_and_send(self, interaction, button):
         index = int(button.label[1:]) - 1  # Extract index from label
         await interaction.response.send_message(f"{interaction.user.mention} asked for an upscale of image #{index + 1}, this shouldn't take too long...")
 
@@ -205,6 +230,10 @@ class Buttons(discord.ui.View, EditableButton, RerollableButton, DeletableButton
         )
 
     async def download_image(self, interaction, button):
+        task = asyncio.create_task(self._download_image(interaction, button))
+        await task
+
+    async def _download_image(self, interaction, button):
         index = int(button.label[1:]) - 1
         file_name = f"{get_filename(interaction, self.params)}_{index}.png"
         fp = f"./out/images_{file_name}"
@@ -225,6 +254,10 @@ class AddDetailButtons(discord.ui.View, DeletableButton, InfoableButton):
             self.add_item(ImageButton("Add Detail", "🔎", 0, self.add_detail))
 
     async def add_detail(self, interaction, button):
+        task = asyncio.create_task(self._add_detail(interaction, button))
+        await task
+
+    async def _add_detail(self, interaction, button):
         await interaction.response.send_message("Increasing detail in the image, this shouldn't take too long...")
 
         # do img2img

@@ -205,6 +205,11 @@ class ImageGenCommands:
                 )
                 return
 
+            if params.style_prompt is not None and params.style_prompt not in params.prompt:
+                params.prompt = params.style_prompt + "\n" + params.prompt
+            if params.negative_style_prompt is not None and (params.negative_prompt is None or params.negative_style_prompt not in params.negative_prompt):
+                params.negative_prompt = params.negative_style_prompt + "\n" + (params.negative_prompt or "")
+
             await interaction.response.send_message(intro_message)
 
             if params.seed is None:

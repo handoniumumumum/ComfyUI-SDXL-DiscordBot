@@ -258,6 +258,8 @@ class SDXLCommand(ImageGenCommands):
             inpainting_detection_threshold: Range[int, 0, 255] = None,
             clip_skip: Range[int, -2, -1] = None,
             use_accelerator_lora: Optional[bool] = None,
+            style_prompt: Optional[str] = None,
+            negative_style_prompt: Optional[str] = None,
         ):
             if input_file is not None:
                 fp = await process_attachment(input_file, interaction)
@@ -293,7 +295,8 @@ class SDXLCommand(ImageGenCommands):
                     else None
                 ),
                 scheduler=defaults.scheduler,
-                style_prompt=defaults.style_prompt,
+                style_prompt=style_prompt or defaults.style_prompt,
+                negative_style_prompt=negative_style_prompt or defaults.negative_style_prompt,
                 detailing_controlnet=defaults.detailing_controlnet,
             )
 

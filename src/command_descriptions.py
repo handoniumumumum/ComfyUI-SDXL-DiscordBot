@@ -115,7 +115,11 @@ CASCADE_ARG_DESCS = {
     "clip_skip": f"default: {CASCADE_GENERATION_DEFAULTS.clip_skip}",
 }
 
-PONY_ARG_DESCS = {**SDXL_ARG_DESCS}
+PONY_ARG_DESCS = {
+    "style_prompt": f"Aesthetic tags, default: {PONY_GENERATION_DEFAULTS.style_prompt}",
+    "negative_style_prompt": f"Negative aesthetic tags, default: {PONY_GENERATION_DEFAULTS.negative_style_prompt}",
+    **SDXL_ARG_DESCS
+}
 
 BASE_ARG_CHOICES = {
     "aspect_ratio": ASPECT_RATIO_CHOICES,

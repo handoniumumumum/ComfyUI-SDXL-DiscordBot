@@ -301,13 +301,13 @@ class EditModal(ui.Modal, title="Edit Image"):
                                    placeholder="Enter a prompt",
                                    min_length=1,
                                    max_length=2048,
-                                   default=self.params.prompt,
+                                   default=self.params.prompt or "",
                                    style=discord.TextStyle.paragraph
                                    )
         self.negative_prompt = ui.TextInput(label="Negative Prompt",
                                             placeholder="Enter a negative prompt",
                                             required=False,
-                                            default=self.params.negative_prompt
+                                            default=self.params.negative_prompt or ""
                                             )
         self.num_steps = ui.TextInput(label="Number of Steps",
                                       placeholder="Enter a number of steps",

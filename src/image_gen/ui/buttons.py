@@ -6,7 +6,7 @@ from datetime import datetime
 
 import discord
 import discord.ext
-from discord import ui
+from discord import ui, SelectOption
 
 from src.comfy_workflows import do_workflow
 from src.consts import *
@@ -15,7 +15,7 @@ from src.image_gen.collage_utils import create_collage, create_gif_collage
 from src.util import get_filename, build_command
 
 
-#<editor-fold desc="ButtonDecorators">
+# <editor-fold desc="ButtonDecorators">
 class EditableButton:
     @discord.ui.button(label="Edit", style=discord.ButtonStyle.blurple, emoji="📝", row=0)
     async def edit_image(self, interaction, button):
@@ -26,6 +26,7 @@ class EditableButton:
         modal = EditModal(self.params, self.command)
         await interaction.response.send_modal(modal)
 
+
 class RerollableButton:
     @discord.ui.button(label="Re-roll", style=discord.ButtonStyle.green, emoji="🎲", row=0)
     async def reroll_image(self, interaction, btn):
@@ -33,9 +34,7 @@ class RerollableButton:
         await task
 
     async def _reroll_image(self, interaction, btn):
-        await interaction.response.send_message(
-            f'{interaction.user.mention} asked me to re-imagine "{self.params.prompt}", this shouldn\'t take too long...'
-        )
+        await interaction.response.send_message(f'{interaction.user.mention} asked me to re-imagine "{self.params.prompt}", this shouldn\'t take too long...')
         btn.disabled = True
         await interaction.message.edit(view=self)
 
@@ -52,15 +51,11 @@ class RerollableButton:
             collage = create_collage(images)
             fname = "collage.png"
 
-        final_message = (
-            f'{interaction.user.mention} asked me to re-imagine "{params.prompt}", here is what I imagined for them. '
-            f"Seed: {params.seed}"
-        )
+        final_message = f'{interaction.user.mention} asked me to re-imagine "{params.prompt}", here is what I imagined for them. ' f"Seed: {params.seed}"
         buttons = Buttons(params, images, interaction.user, command=self.command)
 
-        await interaction.channel.send(
-            content=final_message, file=discord.File(fp=collage, filename=fname), view=buttons
-        )
+        await interaction.channel.send(content=final_message, file=discord.File(fp=collage, filename=fname), view=buttons)
+
 
 class DeletableButton:
     def __init__(self, author):
@@ -76,6 +71,7 @@ class DeletableButton:
             return
 
         await interaction.message.delete()
+
 
 class InfoableButton:
     @discord.ui.button(label="Info", style=discord.ButtonStyle.blurple, emoji="ℹ️", row=1)
@@ -114,7 +110,10 @@ class InfoableButton:
             return
 
         await interaction.response.send_message(info_str, ephemeral=True)
-#</editor-fold>
+
+
+# </editor-fold>
+
 
 class ImageButton(discord.ui.Button):
     def __init__(self, label, emoji, row, callback):
@@ -125,15 +124,25 @@ class ImageButton(discord.ui.Button):
         await self._callback(interaction, self)
 
 
+class AddDetailDropdown(discord.ui.Select):
+    def __init__(self, placeholder, options, row):
+        super().__init__(placeholder=placeholder, options=options, row=row)
+        self.denoise_strength = ADD_DETAIL_DEFAULTS.denoise_strength
+
+    async def callback(self, interaction: discord.Interaction):
+        self.denoise_strength = float(self.values[0])
+        await interaction.response.defer()
+
+
 class Buttons(discord.ui.View, EditableButton, RerollableButton, DeletableButton, InfoableButton):
     def __init__(
-            self,
-            params,
-            images,
-            author,
-            *,
-            timeout=None,
-            command=None,
+        self,
+        params,
+        images,
+        author,
+        *,
+        timeout=None,
+        command=None,
     ):
         super().__init__(timeout=timeout)
         self.params = params
@@ -178,12 +187,16 @@ class Buttons(discord.ui.View, EditableButton, RerollableButton, DeletableButton
 
     async def _generate_alternatives_and_send(self, interaction, button):
         index = int(button.label[1:]) - 1  # Extract index from label
-        await interaction.response.send_message(f"{interaction.user.mention} asked for some alternatives of image #{index + 1}, this shouldn't take too long...")
+        await interaction.response.send_message(
+            f"{interaction.user.mention} asked for some alternatives of image #{index + 1}, this shouldn't take too long..."
+        )
 
         params = deepcopy(self.params)
         params.workflow_type = WorkflowType.img2img
         params.seed = random.randint(0, 999999999999999)
-        params.denoise_strength = SDXL_GENERATION_DEFAULTS.denoise_strength if self.params.model_type == ModelType.SDXL else SD15_GENERATION_DEFAULTS.denoise_strength
+        params.denoise_strength = (
+            SDXL_GENERATION_DEFAULTS.denoise_strength if self.params.model_type == ModelType.SDXL else SD15_GENERATION_DEFAULTS.denoise_strength
+        )
 
         # TODO: should alternatives use num_steps and cfg_scale from original?
         # Buttons should probably still receive these params for rerolls
@@ -197,9 +210,7 @@ class Buttons(discord.ui.View, EditableButton, RerollableButton, DeletableButton
 
         # if a gif, set filename as gif, otherwise png
         fname = "collage.gif" if images[0].format == "GIF" else "collage.png"
-        await interaction.channel.send(
-            content=final_message, file=discord.File(fp=collage_path, filename=fname), view=buttons
-        )
+        await interaction.channel.send(content=final_message, file=discord.File(fp=collage_path, filename=fname), view=buttons)
 
     async def upscale_and_send(self, interaction, button):
         task = asyncio.create_task(self._upscale_and_send(interaction, button))
@@ -223,11 +234,7 @@ class Buttons(discord.ui.View, EditableButton, RerollableButton, DeletableButton
         final_message = f"{interaction.user.mention} here is your upscaled image"
         buttons = AddDetailButtons(params, upscaled_image, author=interaction.user)
         fp = f"{get_filename(interaction, self.params)}_{index}.png"
-        await interaction.channel.send(
-            content=final_message,
-            file=discord.File(fp=upscaled_image_path, filename=fp),
-            view=buttons
-        )
+        await interaction.channel.send(content=final_message, file=discord.File(fp=upscaled_image_path, filename=fp), view=buttons)
 
     async def download_image(self, interaction, button):
         task = asyncio.create_task(self._download_image(interaction, button))
@@ -238,9 +245,7 @@ class Buttons(discord.ui.View, EditableButton, RerollableButton, DeletableButton
         file_name = f"{get_filename(interaction, self.params)}_{index}.png"
         fp = f"./out/images_{file_name}"
         self.images[index].save(fp)
-        await interaction.response.send_message(f"{interaction.user.mention}, here is your image!",
-                                                file=discord.File(fp=fp, filename=file_name)
-                                                )
+        await interaction.response.send_message(f"{interaction.user.mention}, here is your image!", file=discord.File(fp=fp, filename=file_name))
 
 
 class AddDetailButtons(discord.ui.View, DeletableButton, InfoableButton):
@@ -251,36 +256,53 @@ class AddDetailButtons(discord.ui.View, DeletableButton, InfoableButton):
         self.author = author
 
         if self.params.inpainting_prompt is None:
-            self.add_item(ImageButton("Add Detail", "🔎", 0, self.add_detail))
+            options = [
+                SelectOption(label="Enhance 20%", value=str(0.2)),
+                SelectOption(label="Enhance 30%", value=str(0.3)),
+                SelectOption(label="Enhance 40%", value=str(0.4)),
+                SelectOption(label="Enhance 50%", value=str(0.5)),
+                SelectOption(label="Enhance 60%", value=str(0.6)),
+                SelectOption(label="Enhance 70%", value=str(0.7)),
+                SelectOption(label="Enhance 80%", value=str(0.8)),
+                SelectOption(label="Enhance 90%", value=str(0.9)),
+                SelectOption(label="Enhance 100%", value=str(1.0)),
+            ]
+            self.dropdown = AddDetailDropdown(
+                "(Optional) Enhancement %",
+                options,
+                2,
+            )
+            self.add_item(ImageButton("Enhance", "🔎", 1, self.add_detail))
+            self.add_item(self.dropdown)
 
     async def add_detail(self, interaction, button):
-        task = asyncio.create_task(self._add_detail(interaction, button))
+        task = asyncio.create_task(self._add_detail(interaction, self.dropdown.denoise_strength))
         await task
 
-    async def _add_detail(self, interaction, button):
+    async def _add_detail(self, interaction, value):
         await interaction.response.send_message("Increasing detail in the image, this shouldn't take too long...")
 
         # do img2img
         params = deepcopy(self.params)
         params.workflow_type = WorkflowType.add_detail
-        params.denoise_strength = ADD_DETAIL_DEFAULTS.denoise_strength
+        params.denoise_strength = value
         params.detailing_controlnet_strength = ADD_DETAIL_DEFAULTS.detailing_controlnet_strength
         params.detailing_controlnet_end_percent = ADD_DETAIL_DEFAULTS.detailing_controlnet_end_percent
         params.seed = random.randint(0, 999999999999999)
         params.batch_size = 1
 
-        params.filename = os.path.join(os.getcwd(), f"out/images_{get_filename(interaction, self.params)}_{params.seed}.png")
+        params.filename = os.path.join(os.getcwd(), f"out/images_{get_filename(interaction, params)}_{params.seed}.png")
         self.images.save(fp=params.filename)
         images = await do_workflow(params)
         collage_path = create_collage(images)
         final_message = f"{interaction.user.mention} here is your image with more detail"
 
-        fp = f"{get_filename(interaction, self.params)}_detail.png"
+        fp = f"{get_filename(interaction, params)}_detail.png"
 
-        await interaction.channel.send(content=final_message,
-                                       file=discord.File(fp=collage_path, filename=fp),
-                                        view=FinalDetailButtons(params, images, author=interaction.user)
-                                       )
+        await interaction.channel.send(
+            content=final_message, file=discord.File(fp=collage_path, filename=fp), view=AddDetailButtons(params, images[0], author=interaction.user)
+        )
+
 
 class FinalDetailButtons(discord.ui.View, DeletableButton, InfoableButton):
     def __init__(self, params, images, *, timeout=None, author=None):
@@ -288,6 +310,7 @@ class FinalDetailButtons(discord.ui.View, DeletableButton, InfoableButton):
         self.params = params
         self.images = images
         self.author = author
+
 
 class EditModal(ui.Modal, title="Edit Image"):
     def __init__(self, params: ImageWorkflow, command: str):
@@ -297,31 +320,15 @@ class EditModal(ui.Modal, title="Edit Image"):
 
         self.is_video = command == "video"
 
-        self.prompt = ui.TextInput(label="Prompt",
-                                   placeholder="Enter a prompt",
-                                   min_length=1,
-                                   max_length=2048,
-                                   default=self.params.prompt or "",
-                                   style=discord.TextStyle.paragraph
-                                   )
-        self.negative_prompt = ui.TextInput(label="Negative Prompt",
-                                            placeholder="Enter a negative prompt",
-                                            required=False,
-                                            default=self.params.negative_prompt or ""
-                                            )
-        self.num_steps = ui.TextInput(label="Number of Steps",
-                                      placeholder="Enter a number of steps",
-                                      default=str(self.params.num_steps)
-                                      )
-        self.cfg_scale = ui.TextInput(label="Guidance Scale",
-                                      placeholder="Enter a CFG scale",
-                                      default=str(self.params.cfg_scale)
-                                      )
-        self.seed = ui.TextInput(label="Seed",
-                                 placeholder="Enter a seed",
-                                 required=False,
-                                 default=str(self.params.seed)
-                                 )
+        self.prompt = ui.TextInput(
+            label="Prompt", placeholder="Enter a prompt", min_length=1, max_length=2048, default=self.params.prompt or "", style=discord.TextStyle.paragraph
+        )
+        self.negative_prompt = ui.TextInput(
+            label="Negative Prompt", placeholder="Enter a negative prompt", required=False, default=self.params.negative_prompt or ""
+        )
+        self.num_steps = ui.TextInput(label="Number of Steps", placeholder="Enter a number of steps", default=str(self.params.num_steps))
+        self.cfg_scale = ui.TextInput(label="Guidance Scale", placeholder="Enter a CFG scale", default=str(self.params.cfg_scale))
+        self.seed = ui.TextInput(label="Seed", placeholder="Enter a seed", required=False, default=str(self.params.seed))
 
         self.add_item(self.prompt)
         self.add_item(self.negative_prompt)
@@ -345,13 +352,8 @@ class EditModal(ui.Modal, title="Edit Image"):
         images = await do_workflow(params)
 
         # Construct the final message with user mention
-        final_message = f"{interaction.user.mention} asked me to re-imagine \"{self.prompt}\", here is what I imagined for them. Seed: {self.params.seed}"
-        buttons = Buttons(
-            params,
-            images,
-            interaction.user,
-            command=self.command
-        )
+        final_message = f'{interaction.user.mention} asked me to re-imagine "{self.prompt}", here is what I imagined for them. Seed: {self.params.seed}'
+        buttons = Buttons(params, images, interaction.user, command=self.command)
 
         if self.is_video:
             collage = create_gif_collage(images)
@@ -360,10 +362,7 @@ class EditModal(ui.Modal, title="Edit Image"):
             collage = create_collage(images)
             fname = "collage.png"
 
-        await interaction.channel.send(content=final_message,
-                                       file=discord.File(fp=collage, filename=fname),
-                                       view=buttons
-                                       )
+        await interaction.channel.send(content=final_message, file=discord.File(fp=collage, filename=fname), view=buttons)
 
     async def interaction_check(self, interaction: discord.Interaction, /) -> bool:
         if self.num_steps.value.isnumeric() == False:

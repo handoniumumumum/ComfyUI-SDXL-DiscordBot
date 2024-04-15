@@ -1,7 +1,7 @@
 import configparser
 import os
 
-from src.defaults import UPSCALE_DEFAULTS
+from src.defaults import UPSCALE_DEFAULTS, MAX_RETRIES
 from src.image_gen.ImageWorkflow import *
 from src.image_gen.sd_workflows import *
 from src.util import get_loras_from_prompt
@@ -111,12 +111,18 @@ workflow_type_to_method = {
 
 
 async def do_workflow(params: ImageWorkflow):
-    loras = [Lora(lora, strength) for lora, strength in zip(params.loras, params.lora_strengths)] if params.loras else []
+    retries = 0
+    while retries < MAX_RETRIES:
+        try:
+            loras = [Lora(lora, strength) for lora, strength in zip(params.loras, params.lora_strengths)] if params.loras else []
 
-    extra_loras = get_loras_from_prompt(params.prompt)
-    loras.extend([Lora(f"{lora[0]}.safetensors", lora[1]) for lora in extra_loras])
+            extra_loras = get_loras_from_prompt(params.prompt)
+            loras.extend([Lora(f"{lora[0]}.safetensors", lora[1]) for lora in extra_loras])
 
-    if params.use_accelerator_lora:
-        loras.append(Lora(params.accelerator_lora_name, 1.0))
+            if params.use_accelerator_lora:
+                loras.append(Lora(params.accelerator_lora_name, 1.0))
 
-    return await workflow_type_to_method[params.workflow_type](params, params.model_type, loras)
+            return await workflow_type_to_method[params.workflow_type](params, params.model_type, loras)
+        except:
+            retries += 1
+    raise Exception("Failed to generate image")

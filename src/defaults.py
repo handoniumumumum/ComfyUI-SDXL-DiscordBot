@@ -153,3 +153,5 @@ COMMAND_DEFAULTS = {
     "add_detail": ADD_DETAIL_DEFAULTS,
     "upscale": UPSCALE_DEFAULTS,
 }
+
+MAX_RETRIES = int(config["BOT"]["MAX_RETRIES"] or 3)

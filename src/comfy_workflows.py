@@ -119,8 +119,10 @@ async def do_workflow(params: ImageWorkflow):
             extra_loras = get_loras_from_prompt(params.prompt)
             loras.extend([Lora(f"{lora[0]}.safetensors", lora[1]) for lora in extra_loras])
 
-            if params.use_accelerator_lora:
+            if params.use_accelerator_lora and params.num_steps < 10:
                 loras.append(Lora(params.accelerator_lora_name, 1.0))
+            elif params.cfg_scale < 1.5:
+                params.cfg_scale = 5.0
 
             return await workflow_type_to_method[params.workflow_type](params, params.model_type, loras)
         except:

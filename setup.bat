@@ -9,7 +9,7 @@ IF NOT EXIST venv (
     echo created new virtualenv
 )
 
-call venv\Scripts\activate
+call venv\Scripts\activate.bat
 pip install -r requirements.txt
 
 IF NOT EXIST config.properties (

@@ -13,11 +13,11 @@ def create_gif_collage(images):
 
 
 def create_collage(images):
-    if (len(images) == 0):
+    if images is None or len(images) == 0:
         print("Error: No images to make collage")
         return None
 
-    if (images[0].format == 'GIF'):
+    if images[0].format == 'GIF':
         return create_gif_collage(images)
 
     num_images = len(images)

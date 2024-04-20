@@ -217,7 +217,10 @@ class ImageGenCommands:
 
             from src.comfy_workflows import do_workflow
 
-            images = await do_workflow(params)
+            images = await do_workflow(params, interaction)
+
+            if images is None or len(images) == 0:
+                return
 
             final_message = f"{completion_message}\n Seed: {params.seed}"
             buttons = Buttons(params, images, interaction.user, command=command_name)

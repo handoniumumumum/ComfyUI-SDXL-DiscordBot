@@ -1,6 +1,8 @@
 import configparser
 import os
 
+import discord
+
 from src.defaults import UPSCALE_DEFAULTS, MAX_RETRIES
 from src.image_gen.ImageWorkflow import *
 from src.image_gen.sd_workflows import *
@@ -109,8 +111,22 @@ workflow_type_to_method = {
     WorkflowType.video: _do_video,
 }
 
+user_queues = {}
 
-async def do_workflow(params: ImageWorkflow):
+
+async def do_workflow(params: ImageWorkflow, interaction: discord.Interaction):
+    global user_queues
+    user = interaction.user
+
+    if user_queues.get(user.id) is not None and user_queues[user.id] >= int(config["BOT"]["MAX_QUEUE_PER_USER"]):
+        await interaction.edit_original_response(content=f"{user.mention} `You have too many pending requests. Please wait for them to finish. Amount in queue: {user_queues[user.id]}`")
+        return
+
+    if user_queues.get(user.id) is None or user_queues[user.id] < 0:
+        user_queues[user.id] = 0
+
+    user_queues[user.id] += 1
+
     retries = 0
     while retries < MAX_RETRIES:
         try:
@@ -124,7 +140,11 @@ async def do_workflow(params: ImageWorkflow):
             elif params.cfg_scale < 1.5:
                 params.cfg_scale = 5.0
 
-            return await workflow_type_to_method[params.workflow_type](params, params.model_type, loras)
+            result = await workflow_type_to_method[params.workflow_type](params, params.model_type, loras)
+            user_queues[user.id] -= 1
+            return result
         except:
             retries += 1
+
+    user_queues[user.id] -= 1
     raise Exception("Failed to generate image")

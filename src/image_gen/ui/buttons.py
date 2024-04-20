@@ -42,7 +42,7 @@ class RerollableButton:
 
         params.seed = random.randint(0, 999999999999999)
 
-        images = await do_workflow(params)
+        images = await do_workflow(params, interaction)
 
         if self.is_video:
             collage = create_gif_collage(images)
@@ -202,7 +202,7 @@ class Buttons(discord.ui.View, EditableButton, RerollableButton, DeletableButton
         # Buttons should probably still receive these params for rerolls
         params.filename = os.path.join(os.getcwd(), f"out/images_{get_filename(interaction, self.params)}_{index}.png")
         self.images[index].save(fp=params.filename)
-        images = await do_workflow(params)
+        images = await do_workflow(params, interaction)
         collage_path = create_collage(images)
         final_message = f"{interaction.user.mention} here are your alternative images"
 
@@ -226,7 +226,10 @@ class Buttons(discord.ui.View, EditableButton, RerollableButton, DeletableButton
 
         params.filename = os.path.join(os.getcwd(), f"out/images_{get_filename(interaction, self.params)}_{index}.png")
         self.images[index].save(fp=params.filename)
-        upscaled_image = await do_workflow(params)
+        upscaled_image = await do_workflow(params, interaction)
+
+        if upscaled_image is None or len(upscaled_image) == 0:
+            return
 
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
         upscaled_image_path = f"./out/upscaledImage_{timestamp}.png"
@@ -293,7 +296,7 @@ class AddDetailButtons(discord.ui.View, DeletableButton, InfoableButton):
 
         params.filename = os.path.join(os.getcwd(), f"out/images_{get_filename(interaction, params)}_{params.seed}.png")
         self.images.save(fp=params.filename)
-        images = await do_workflow(params)
+        images = await do_workflow(params, interaction)
         collage_path = create_collage(images)
         final_message = f"{interaction.user.mention} here is your image with more detail"
 
@@ -302,14 +305,6 @@ class AddDetailButtons(discord.ui.View, DeletableButton, InfoableButton):
         await interaction.channel.send(
             content=final_message, file=discord.File(fp=collage_path, filename=fp), view=AddDetailButtons(params, images[0], author=interaction.user)
         )
-
-
-class FinalDetailButtons(discord.ui.View, DeletableButton, InfoableButton):
-    def __init__(self, params, images, *, timeout=None, author=None):
-        super().__init__(timeout=timeout)
-        self.params = params
-        self.images = images
-        self.author = author
 
 
 class EditModal(ui.Modal, title="Edit Image"):
@@ -349,7 +344,7 @@ class EditModal(ui.Modal, title="Edit Image"):
         if params.seed is None:
             params.seed = random.randint(0, 999999999999999)
 
-        images = await do_workflow(params)
+        images = await do_workflow(params, interaction)
 
         # Construct the final message with user mention
         final_message = f'{interaction.user.mention} asked me to re-imagine "{self.prompt}", here is what I imagined for them. Seed: {self.params.seed}'

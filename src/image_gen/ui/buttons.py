@@ -228,7 +228,7 @@ class Buttons(discord.ui.View, EditableButton, RerollableButton, DeletableButton
         self.images[index].save(fp=params.filename)
         upscaled_image = await do_workflow(params, interaction)
 
-        if upscaled_image is None or len(upscaled_image) == 0:
+        if upscaled_image is None:
             return
 
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")

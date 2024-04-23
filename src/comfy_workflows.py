@@ -18,7 +18,7 @@ comfy_root_directory = config["LOCAL"]["COMFY_ROOT_DIR"]
 async def _do_txt2img(params: ImageWorkflow, model_type: ModelType, loras: list[Lora]):
     workflow = model_type_to_workflow[model_type](params.model, params.clip_skip, loras, params.vae)
     workflow.create_latents(params.dimensions, params.batch_size)
-    workflow.condition_prompts(params.prompt, params.negative_prompt or "")
+    workflow.condition_prompts(params)
     workflow.sample(params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler or "normal")
     images = workflow.decode_and_save("final_output")
     results = await images._wait()
@@ -32,7 +32,7 @@ async def _do_img2img(params: ImageWorkflow, model_type: ModelType, loras: list[
     workflow.create_img2img_latents(image_input, params.batch_size)
     if params.inpainting_prompt:
         workflow.mask_for_inpainting(image_input, params.inpainting_prompt, params.inpainting_detection_threshold)
-    workflow.condition_prompts(params.prompt, params.negative_prompt or "")
+    workflow.condition_prompts(params)
     workflow.sample(params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler or "normal", params.denoise_strength)
     images = workflow.decode_and_save("final_output")
     results = await images._wait()
@@ -53,7 +53,7 @@ async def _do_add_detail(params: ImageWorkflow, model_type: ModelType, loras: li
     workflow = model_type_to_workflow[model_type](params.model, params.clip_skip, loras, params.vae)
     image_input = LoadImage(params.filename)[0]
     workflow.create_img2img_latents(image_input, params.batch_size)
-    workflow.condition_prompts(params.prompt, params.negative_prompt or "")
+    workflow.condition_prompts(params)
     workflow.condition_for_detailing(params.detailing_controlnet, image_input)
     workflow.sample(params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler or "normal", params.denoise_strength)
     images = workflow.decode_and_save("final_output")
@@ -66,7 +66,7 @@ async def _do_image_mashup(params: ImageWorkflow, model_type: ModelType, loras: 
     workflow = model_type_to_workflow[model_type](params.model, params.clip_skip, loras, params.vae)
     image_inputs = [LoadImage(filename)[0] for filename in [params.filename, params.filename2]]
     workflow.create_latents(params.dimensions, params.batch_size)
-    workflow.condition_prompts(params.prompt, params.negative_prompt or "")
+    workflow.condition_prompts(params)
     workflow.unclip_encode(image_inputs)
     workflow.sample(params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler or "normal")
     images = workflow.decode_and_save("final_output")

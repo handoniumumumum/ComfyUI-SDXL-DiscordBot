@@ -2,6 +2,7 @@ import dataclasses
 from typing import Optional
 
 from comfy_script.runtime import *
+from src.image_gen.ImageWorkflow import ImageWorkflow
 from src.util import get_server_address
 
 load(get_server_address())
@@ -52,9 +53,13 @@ class SDWorkflow:
     def animate_diff_combine(self, images: Image):
         return VHSVideoCombine(images, 8, 0, 'final_output', 'image/gif', False, True, None, None)
 
-    def condition_prompts(self, positive_prompt: str, negative_prompt: str):
+    def condition_prompts(self, params: ImageWorkflow):
+        if params.use_llm is True:
+            positive_prompt = self._process_prompt_with_llm(params.prompt, params.seed)
+        else:
+            positive_prompt = params.prompt
         self.conditioning = CLIPTextEncode(positive_prompt, self.clip)
-        self.negative_conditioning = CLIPTextEncode(negative_prompt, self.clip)
+        self.negative_conditioning = CLIPTextEncode(params.negative_prompt, self.clip)
 
     def condition_for_detailing(self, controlnet_name, image):
         pass
@@ -75,27 +80,44 @@ class SDWorkflow:
         image = VAEDecode(self.output_latents, self.vae)
         return SaveImage(image, file_name)
 
+    def _process_prompt_with_llm(self, positive_prompt: str, seed: int):
+        from src.defaults import llm_prompt, llm_parameters
+        prompt_text = llm_prompt + "\n" + positive_prompt
+        _, prompt = IFChatPrompt(image_prompt=prompt_text, engine=IFChatPrompt.engine.ollama, base_ip=llm_parameters["API_URL"], port=llm_parameters["API_PORT"], selected_model=llm_parameters["MODEL_NAME"], profile= IFChatPrompt.profile.IF_PromptMKR, seed=seed, random = True)
+        return prompt
+
 
 class SD15Workflow(SDWorkflow):
     pass
 
 
 class SDXLWorkflow(SDWorkflow):
-    def condition_prompts(self, positive_prompt: str, negative_prompt: str):
+    def condition_prompts(self, params: ImageWorkflow):
+        if params.use_llm is True:
+            positive_prompt = self._process_prompt_with_llm(params.prompt, params.seed)
+        else:
+            positive_prompt = params.prompt
         self.conditioning = CLIPTextEncodeSDXL(4096, 4096, 4096, 4096, 4096, 4096, positive_prompt, self.clip, positive_prompt)
-        self.negative_conditioning = CLIPTextEncode(negative_prompt, self.clip)
+        self.negative_conditioning = CLIPTextEncode(params.negative_prompt, self.clip)
 
     def condition_for_detailing(self, controlnet_name, image):
         if controlnet_name is None or controlnet_name == "":
             return
-        preprocessed_image = TilePreprocessor(image, 1)
+        try:
+            image = TilePreprocessor(image, 1)
+        except:
+            print("no tile preprocessor")
         controlnet = ControlNetLoaderAdvanced(controlnet_name)
-        self.conditioning, self.negative_conditioning, _ = ACNAdvancedControlNetApply(self.conditioning, self.negative_conditioning, controlnet, preprocessed_image, model_optional=self.model)
+        self.conditioning, self.negative_conditioning, _ = ACNAdvancedControlNetApply(self.conditioning, self.negative_conditioning, controlnet, image, model_optional=self.model)
 
 class PonyWorkflow(SDXLWorkflow):
-    def condition_prompts(self, positive_prompt: str, negative_prompt: str):
+    def condition_prompts(self, params: ImageWorkflow):
+        if params.use_llm is True:
+            positive_prompt = self._process_prompt_with_llm(params.prompt, params.seed)
+        else:
+            positive_prompt = params.prompt
         self.conditioning = CLIPTextEncodeSDXL(1024, 1024, 1024, 1024, 1024, 1024, positive_prompt, self.clip, positive_prompt)
-        self.negative_conditioning = CLIPTextEncode(negative_prompt, self.clip)
+        self.negative_conditioning = CLIPTextEncode(params.negative_prompt, self.clip)
 
 class SDCascadeWorkflow(SDWorkflow):
     def _load_model(self, model_name: str, clip_skip: int, loras: Optional[list[Lora]] = None, vae_name: Optional[str] = None):
@@ -118,10 +140,14 @@ class SDCascadeWorkflow(SDWorkflow):
             encoded_clip_vision = CLIPVisionEncode(self.clip_vision, input)
             self.conditioning = UnCLIPConditioning(self.conditioning, encoded_clip_vision)
 
-    def condition_prompts(self, positive_prompt: str, negative_prompt: str):
+    def condition_prompts(self, params):
+        if params.use_llm is True:
+            positive_prompt = self._process_prompt_with_llm(params.prompt, params.seed)
+        else:
+            positive_prompt = params.prompt
         self.conditioning = CLIPTextEncode(positive_prompt, self.clip)
         self.stage_c_conditioning = self.conditioning
-        self.negative_conditioning = CLIPTextEncode(negative_prompt, self.clip)
+        self.negative_conditioning = CLIPTextEncode(params.negative_prompt, self.clip)
 
     def sample(self, seed: int, num_samples: int, cfg_scale: float, sampler_name: str, scheduler: str, denoise_strength: float = 1):
         stage_c = KSampler(self.model, seed, num_samples, cfg_scale, sampler_name, scheduler, self.conditioning, self.negative_conditioning, self.latents[0], denoise_strength)

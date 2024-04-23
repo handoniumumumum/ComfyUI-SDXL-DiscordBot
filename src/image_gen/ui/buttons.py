@@ -144,6 +144,9 @@ class Buttons(discord.ui.View, EditableButton, RerollableButton, DeletableButton
         timeout=None,
         command=None,
     ):
+        if images is None:
+            return
+
         super().__init__(timeout=timeout)
         self.params = params
         self.images = images
@@ -297,6 +300,10 @@ class AddDetailButtons(discord.ui.View, DeletableButton, InfoableButton):
         params.filename = os.path.join(os.getcwd(), f"out/images_{get_filename(interaction, params)}_{params.seed}.png")
         self.images.save(fp=params.filename)
         images = await do_workflow(params, interaction)
+
+        if images is None or (isinstance(images, list) and len(images) == 0):
+            return
+
         collage_path = create_collage(images)
         final_message = f"{interaction.user.mention} here is your image with more detail"
 

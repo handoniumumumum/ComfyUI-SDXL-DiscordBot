@@ -95,6 +95,7 @@ class SDXLWorkflow(SDWorkflow):
     def condition_prompts(self, params: ImageWorkflow):
         if params.use_llm is True:
             positive_prompt = self._process_prompt_with_llm(params.prompt, params.seed)
+            positive_prompt = TextConcatenate('', True, params.prompt + " BREAK\n", positive_prompt, "", "")
         else:
             positive_prompt = params.prompt
         self.conditioning = CLIPTextEncodeSDXL(4096, 4096, 4096, 4096, 4096, 4096, positive_prompt, self.clip, positive_prompt)

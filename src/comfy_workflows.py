@@ -153,7 +153,7 @@ def do_preview(task, node_id, image, interaction):
     if image is None:
         return
     try:
-        fp = f"{comfy_root_directory}/output/temp_preview.png"
+        fp = os.path.join(comfy_root_directory, "output", "temp_preview.png")
         image.save(fp)
         asyncio.run_coroutine_threadsafe(interaction.edit_original_response(attachments=[discord.File(fp)]), loop)
     except Exception as e:

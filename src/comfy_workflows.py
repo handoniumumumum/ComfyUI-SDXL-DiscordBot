@@ -160,7 +160,6 @@ def do_preview(task, node_id, image, interaction):
     except Exception as e:
         print(e)
 
-
 async def do_workflow(params: ImageWorkflow, interaction: discord.Interaction):
     global user_queues, loop
     loop = asyncio.get_event_loop()
@@ -199,6 +198,7 @@ async def do_workflow(params: ImageWorkflow, interaction: discord.Interaction):
             result = await workflow_type_to_method[params.workflow_type](params, params.model_type, loras, interaction)
 
             user_queues[user.id] -= 1
+            await interaction.edit_original_response(attachments=[])
             return result
         except:
             user_queues[user.id] -= 1

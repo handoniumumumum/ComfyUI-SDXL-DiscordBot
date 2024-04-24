@@ -223,6 +223,12 @@ class ImageGenCommands:
                 return
 
             final_message = f"{completion_message}\n Seed: {params.seed}"
+
+            if params.use_llm:
+                final_message += f"\nenhanced prompt: `{params.prompt}`"
+
+            params.use_llm = False
+
             buttons = Buttons(params, images, interaction.user, command=command_name)
 
             file_name = get_filename(interaction, params)

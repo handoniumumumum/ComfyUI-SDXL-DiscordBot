@@ -18,7 +18,7 @@ comfy_root_directory = config["LOCAL"]["COMFY_ROOT_DIR"]
 async def _do_txt2img(params: ImageWorkflow, model_type: ModelType, loras: list[Lora]):
     workflow = model_type_to_workflow[model_type](params.model, params.clip_skip, loras, params.vae)
     workflow.create_latents(params.dimensions, params.batch_size)
-    workflow.condition_prompts(params)
+    workflow.condition_prompts(params.prompt, params.negative_prompt)
     workflow.sample(params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler or "normal")
     images = workflow.decode_and_save("final_output")
     results = await images._wait()
@@ -32,7 +32,7 @@ async def _do_img2img(params: ImageWorkflow, model_type: ModelType, loras: list[
     workflow.create_img2img_latents(image_input, params.batch_size)
     if params.inpainting_prompt:
         workflow.mask_for_inpainting(image_input, params.inpainting_prompt, params.inpainting_detection_threshold)
-    workflow.condition_prompts(params)
+    workflow.condition_prompts(params.prompt, params.negative_prompt)
     workflow.sample(params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler or "normal", params.denoise_strength)
     images = workflow.decode_and_save("final_output")
     results = await images._wait()
@@ -53,7 +53,7 @@ async def _do_add_detail(params: ImageWorkflow, model_type: ModelType, loras: li
     workflow = model_type_to_workflow[model_type](params.model, params.clip_skip, loras, params.vae)
     image_input = LoadImage(params.filename)[0]
     workflow.create_img2img_latents(image_input, params.batch_size)
-    workflow.condition_prompts(params)
+    workflow.condition_prompts(params.prompt, params.negative_prompt)
     workflow.condition_for_detailing(params.detailing_controlnet, image_input)
     workflow.sample(params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler or "normal", params.denoise_strength)
     images = workflow.decode_and_save("final_output")
@@ -66,7 +66,7 @@ async def _do_image_mashup(params: ImageWorkflow, model_type: ModelType, loras: 
     workflow = model_type_to_workflow[model_type](params.model, params.clip_skip, loras, params.vae)
     image_inputs = [LoadImage(filename)[0] for filename in [params.filename, params.filename2]]
     workflow.create_latents(params.dimensions, params.batch_size)
-    workflow.condition_prompts(params)
+    workflow.condition_prompts(params.prompt, params.negative_prompt)
     workflow.unclip_encode(image_inputs)
     workflow.sample(params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler or "normal")
     images = workflow.decode_and_save("final_output")
@@ -101,6 +101,11 @@ async def _do_video(params: ImageWorkflow, model_type: ModelType, loras: list[Lo
     final_video = PIL.Image.open(os.path.join(comfy_root_directory, "output", results["gifs"][0]["filename"]))
     return [final_video]
 
+def process_prompt_with_llm(positive_prompt: str, seed: int):
+    from src.defaults import llm_prompt, llm_parameters
+    prompt_text = llm_prompt + "\n" + positive_prompt
+    _, prompt = IFChatPrompt(image_prompt=prompt_text, engine=IFChatPrompt.engine.ollama, base_ip=llm_parameters["API_URL"], port=llm_parameters["API_PORT"], selected_model=llm_parameters["MODEL_NAME"], profile= IFChatPrompt.profile.IF_PromptMKR, seed=seed, random = True)
+    return prompt
 
 workflow_type_to_method = {
     WorkflowType.txt2img: _do_txt2img,
@@ -119,7 +124,9 @@ async def do_workflow(params: ImageWorkflow, interaction: discord.Interaction):
     user = interaction.user
 
     if user_queues.get(user.id) is not None and user_queues[user.id] >= int(config["BOT"]["MAX_QUEUE_PER_USER"]):
-        await interaction.edit_original_response(content=f"{user.mention} `You have too many pending requests. Please wait for them to finish. Amount in queue: {user_queues[user.id]}`")
+        await interaction.edit_original_response(
+            content=f"{user.mention} `You have too many pending requests. Please wait for them to finish. Amount in queue: {user_queues[user.id]}`"
+        )
         return
 
     if user_queues.get(user.id) is None or user_queues[user.id] < 0:
@@ -140,11 +147,17 @@ async def do_workflow(params: ImageWorkflow, interaction: discord.Interaction):
             elif params.cfg_scale < 1.5:
                 params.cfg_scale = 5.0
 
+            if params.use_llm is True:
+                enhanced_prompt = process_prompt_with_llm(params.prompt, params.seed)
+                prompt_result = await IFDisplayText(enhanced_prompt)
+                params.prompt = prompt_result._output["string"][0]
+
             result = await workflow_type_to_method[params.workflow_type](params, params.model_type, loras)
+
             user_queues[user.id] -= 1
             return result
         except:
+            user_queues[user.id] -= 1
             retries += 1
 
-    user_queues[user.id] -= 1
     raise Exception("Failed to generate image")

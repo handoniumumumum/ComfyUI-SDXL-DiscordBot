@@ -1,8 +1,11 @@
 import configparser
 import os
 
+import PIL
 import discord
+import asyncio
 
+from PIL import Image
 from src.defaults import UPSCALE_DEFAULTS, MAX_RETRIES
 from src.image_gen.ImageWorkflow import *
 from src.image_gen.sd_workflows import *
@@ -14,33 +17,40 @@ config = configparser.ConfigParser()
 config.read("config.properties")
 comfy_root_directory = config["LOCAL"]["COMFY_ROOT_DIR"]
 
+loop = None
 
-async def _do_txt2img(params: ImageWorkflow, model_type: ModelType, loras: list[Lora]):
-    workflow = model_type_to_workflow[model_type](params.model, params.clip_skip, loras, params.vae)
-    workflow.create_latents(params.dimensions, params.batch_size)
-    workflow.condition_prompts(params.prompt, params.negative_prompt)
-    workflow.sample(params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler or "normal")
-    images = workflow.decode_and_save("final_output")
-    results = await images._wait()
+async def _do_txt2img(params: ImageWorkflow, model_type: ModelType, loras: list[Lora], interaction):
+    with Workflow() as wf:
+        workflow = model_type_to_workflow[model_type](params.model, params.clip_skip, loras, params.vae)
+        workflow.create_latents(params.dimensions, params.batch_size)
+        workflow.condition_prompts(params.prompt, params.negative_prompt)
+        workflow.sample(params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler or "normal")
+        images = workflow.decode_and_save("final_output")
+    wf.task.add_preview_callback(lambda task, node_id, image: do_preview(task, node_id, image, interaction))
+    results = await images
+    await results
     image_batch = [await results.get(i) for i in range(params.batch_size)]
     return image_batch
 
 
-async def _do_img2img(params: ImageWorkflow, model_type: ModelType, loras: list[Lora]):
-    workflow = model_type_to_workflow[model_type](params.model, params.clip_skip, loras, params.vae)
-    image_input = LoadImage(params.filename)[0]
-    workflow.create_img2img_latents(image_input, params.batch_size)
-    if params.inpainting_prompt:
-        workflow.mask_for_inpainting(image_input, params.inpainting_prompt, params.inpainting_detection_threshold)
-    workflow.condition_prompts(params.prompt, params.negative_prompt)
-    workflow.sample(params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler or "normal", params.denoise_strength)
-    images = workflow.decode_and_save("final_output")
-    results = await images._wait()
+async def _do_img2img(params: ImageWorkflow, model_type: ModelType, loras: list[Lora], interaction):
+    with Workflow() as wf:
+        workflow = model_type_to_workflow[model_type](params.model, params.clip_skip, loras, params.vae)
+        image_input = LoadImage(params.filename)[0]
+        workflow.create_img2img_latents(image_input, params.batch_size)
+        if params.inpainting_prompt:
+            workflow.mask_for_inpainting(image_input, params.inpainting_prompt, params.inpainting_detection_threshold)
+        workflow.condition_prompts(params.prompt, params.negative_prompt)
+        workflow.sample(params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler or "normal", params.denoise_strength)
+        images = workflow.decode_and_save("final_output")
+    wf.task.add_preview_callback(lambda task, node_id, image: do_preview(task, node_id, image, interaction))
+    results = await images
+    await results
     image_batch = [await results.get(i) for i in range(params.batch_size)]
     return image_batch
 
 
-async def _do_upscale(params: ImageWorkflow, model_type: ModelType, loras: list[Lora]):
+async def _do_upscale(params: ImageWorkflow, model_type: ModelType, loras: list[Lora], interaction):
     workflow = UpscaleWorkflow()
     workflow.load_image(params.filename)
     workflow.upscale(UPSCALE_DEFAULTS.model, 2.0)
@@ -49,33 +59,39 @@ async def _do_upscale(params: ImageWorkflow, model_type: ModelType, loras: list[
     return await results.get(0)
 
 
-async def _do_add_detail(params: ImageWorkflow, model_type: ModelType, loras: list[Lora]):
-    workflow = model_type_to_workflow[model_type](params.model, params.clip_skip, loras, params.vae)
-    image_input = LoadImage(params.filename)[0]
-    workflow.create_img2img_latents(image_input, params.batch_size)
-    workflow.condition_prompts(params.prompt, params.negative_prompt)
-    workflow.condition_for_detailing(params.detailing_controlnet, image_input)
-    workflow.sample(params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler or "normal", params.denoise_strength)
-    images = workflow.decode_and_save("final_output")
-    results = await images._wait()
+async def _do_add_detail(params: ImageWorkflow, model_type: ModelType, loras: list[Lora], interaction):
+    with Workflow() as wf:
+        workflow = model_type_to_workflow[model_type](params.model, params.clip_skip, loras, params.vae)
+        image_input = LoadImage(params.filename)[0]
+        workflow.create_img2img_latents(image_input, params.batch_size)
+        workflow.condition_prompts(params.prompt, params.negative_prompt)
+        workflow.condition_for_detailing(params.detailing_controlnet, image_input)
+        workflow.sample(params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler or "normal", params.denoise_strength)
+        images = workflow.decode_and_save("final_output")
+    wf.task.add_preview_callback(lambda task, node_id, image: do_preview(task, node_id, image, interaction))
+    results = await images
+    await results
     image_batch = [await results.get(i) for i in range(params.batch_size)]
     return image_batch
 
 
-async def _do_image_mashup(params: ImageWorkflow, model_type: ModelType, loras: list[Lora]):
-    workflow = model_type_to_workflow[model_type](params.model, params.clip_skip, loras, params.vae)
-    image_inputs = [LoadImage(filename)[0] for filename in [params.filename, params.filename2]]
-    workflow.create_latents(params.dimensions, params.batch_size)
-    workflow.condition_prompts(params.prompt, params.negative_prompt)
-    workflow.unclip_encode(image_inputs)
-    workflow.sample(params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler or "normal")
-    images = workflow.decode_and_save("final_output")
-    results = await images._wait()
+async def _do_image_mashup(params: ImageWorkflow, model_type: ModelType, loras: list[Lora], interaction):
+    with Workflow() as wf:
+        workflow = model_type_to_workflow[model_type](params.model, params.clip_skip, loras, params.vae)
+        image_inputs = [LoadImage(filename)[0] for filename in [params.filename, params.filename2]]
+        workflow.create_latents(params.dimensions, params.batch_size)
+        workflow.condition_prompts(params.prompt, params.negative_prompt)
+        workflow.unclip_encode(image_inputs)
+        workflow.sample(params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler or "normal")
+        images = workflow.decode_and_save("final_output")
+    wf.task.add_preview_callback(lambda task, node_id, image: do_preview(task, node_id, image, interaction))
+    results = await images
+    await results
     image_batch = [await results.get(i) for i in range(params.batch_size)]
     return image_batch
 
 
-async def _do_video(params: ImageWorkflow, model_type: ModelType, loras: list[Lora]):
+async def _do_video(params: ImageWorkflow, model_type: ModelType, loras: list[Lora], interaction):
     import PIL
 
     with open(params.filename, "rb") as f:
@@ -86,26 +102,40 @@ async def _do_video(params: ImageWorkflow, model_type: ModelType, loras: list[Lo
         if width / height <= 1:
             padding = height // 2
 
-    image = LoadImage(params.filename)[0]
-    image, _ = ImagePadForOutpaint(image, padding, 0, padding, 0, 40)
-    model, clip_vision, vae = ImageOnlyCheckpointLoader(params.model)
-    model = VideoLinearCFGGuidance(model, params.min_cfg)
-    positive, negative, latent = SVDImg2vidConditioning(clip_vision, image, vae, 1024, 576, 25, params.motion, 8, params.augmentation)
-    latent = KSampler(model, params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler, positive, negative, latent, 1)
-    image2 = VAEDecode(latent, vae)
-    video = VHSVideoCombine(image2, 8, 0, "final_output", "image/gif", False, True, None, None)
-    preview = PreviewImage(image)
+    with Workflow() as wf:
+        image = LoadImage(params.filename)[0]
+        image, _ = ImagePadForOutpaint(image, padding, 0, padding, 0, 40)
+        model, clip_vision, vae = ImageOnlyCheckpointLoader(params.model)
+        model = VideoLinearCFGGuidance(model, params.min_cfg)
+        positive, negative, latent = SVDImg2vidConditioning(clip_vision, image, vae, 1024, 576, 25, params.motion, 8, params.augmentation)
+        latent = KSampler(model, params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler, positive, negative, latent, 1)
+        image2 = VAEDecode(latent, vae)
+        video = VHSVideoCombine(image2, 8, 0, "final_output", "image/gif", False, True, None, None)
+        preview = PreviewImage(image)
+    wf.task.add_preview_callback(lambda task, node_id, image: do_preview(task, node_id, image, interaction))
     await preview._wait()
     await video._wait()
     results = video.wait()._output
     final_video = PIL.Image.open(os.path.join(comfy_root_directory, "output", results["gifs"][0]["filename"]))
     return [final_video]
 
+
 def process_prompt_with_llm(positive_prompt: str, seed: int):
     from src.defaults import llm_prompt, llm_parameters
+
     prompt_text = llm_prompt + "\n" + positive_prompt
-    _, prompt = IFChatPrompt(image_prompt=prompt_text, engine=IFChatPrompt.engine.ollama, base_ip=llm_parameters["API_URL"], port=llm_parameters["API_PORT"], selected_model=llm_parameters["MODEL_NAME"], profile= IFChatPrompt.profile.IF_PromptMKR, seed=seed, random = True)
+    _, prompt = IFChatPrompt(
+        image_prompt=prompt_text,
+        engine=IFChatPrompt.engine.ollama,
+        base_ip=llm_parameters["API_URL"],
+        port=llm_parameters["API_PORT"],
+        selected_model=llm_parameters["MODEL_NAME"],
+        profile=IFChatPrompt.profile.IF_PromptMKR,
+        seed=seed,
+        random=True,
+    )
     return prompt
+
 
 workflow_type_to_method = {
     WorkflowType.txt2img: _do_txt2img,
@@ -119,8 +149,20 @@ workflow_type_to_method = {
 user_queues = {}
 
 
+def do_preview(task, node_id, image, interaction):
+    if image is None:
+        return
+    try:
+        fp = f"{comfy_root_directory}/output/temp_preview.png"
+        image.save(fp)
+        asyncio.run_coroutine_threadsafe(interaction.edit_original_response(attachments=[discord.File(fp)]), loop)
+    except Exception as e:
+        print(e)
+
+
 async def do_workflow(params: ImageWorkflow, interaction: discord.Interaction):
-    global user_queues
+    global user_queues, loop
+    loop = asyncio.get_event_loop()
     user = interaction.user
 
     if user_queues.get(user.id) is not None and user_queues[user.id] >= int(config["BOT"]["MAX_QUEUE_PER_USER"]):
@@ -134,6 +176,7 @@ async def do_workflow(params: ImageWorkflow, interaction: discord.Interaction):
 
     user_queues[user.id] += 1
 
+    queue.watch_display(False, False, False)
     retries = 0
     while retries < MAX_RETRIES:
         try:
@@ -152,7 +195,7 @@ async def do_workflow(params: ImageWorkflow, interaction: discord.Interaction):
                 prompt_result = await IFDisplayText(enhanced_prompt)
                 params.prompt = prompt_result._output["string"][0]
 
-            result = await workflow_type_to_method[params.workflow_type](params, params.model_type, loras)
+            result = await workflow_type_to_method[params.workflow_type](params, params.model_type, loras, interaction)
 
             user_queues[user.id] -= 1
             return result

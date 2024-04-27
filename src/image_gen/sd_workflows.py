@@ -124,7 +124,7 @@ class SDCascadeWorkflow(SDWorkflow):
     def condition_prompts(self, positive_prompt: str, negative_prompt: str):
         self.conditioning = CLIPTextEncode(positive_prompt, self.clip)
         self.stage_c_conditioning = self.conditioning
-        self.negative_conditioning = CLIPTextEncode(negative_prompt, self.clip)
+        self.negative_conditioning = CLIPTextEncode(negative_prompt or "", self.clip)
 
     def sample(self, seed: int, num_samples: int, cfg_scale: float, sampler_name: str, scheduler: str, denoise_strength: float = 1):
         stage_c = KSampler(self.model, seed, num_samples, cfg_scale, sampler_name, scheduler, self.conditioning, self.negative_conditioning, self.latents[0], denoise_strength)

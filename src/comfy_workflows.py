@@ -133,6 +133,7 @@ def process_prompt_with_llm(positive_prompt: str, seed: int, profile: str):
         profile=profile,
         seed=seed,
         random=True,
+        temperature=0.2,
     )
     return prompt
 

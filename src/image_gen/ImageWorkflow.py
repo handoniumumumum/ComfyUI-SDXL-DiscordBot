@@ -66,3 +66,4 @@ class ImageWorkflow:
     detailing_controlnet_strength: Optional[float] = None
     detailing_controlnet_end_percent: Optional[float] = None
     use_llm: Optional[bool] = None
+    llm_profile: Optional[str] = None

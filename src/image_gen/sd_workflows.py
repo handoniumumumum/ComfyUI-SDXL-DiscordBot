@@ -103,6 +103,11 @@ class PonyWorkflow(SDXLWorkflow):
 class SDCascadeWorkflow(SDWorkflow):
     def _load_model(self, model_name: str, clip_skip: int, loras: Optional[list[Lora]] = None, vae_name: Optional[str] = None):
         self.model, self.clip, self.stage_c_vae, self.clip_vision = UnCLIPCheckpointLoader(model_name)
+        if loras:
+            for lora in loras:
+                if lora.name == None or lora.name == "None":
+                    continue
+                self.model, self.clip = LoraLoader(self.model, self.clip, lora.name, lora.strength, lora.strength)
         self.stage_b_model, self.stage_b_clip, self.vae = CheckpointLoaderSimple(Checkpoints.cascade_stable_cascade_stage_b)
 
     def create_latents(self, dimensions: tuple[int, int], batches: int):

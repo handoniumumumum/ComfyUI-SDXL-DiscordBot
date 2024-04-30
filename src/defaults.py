@@ -25,6 +25,7 @@ SD15_GENERATION_DEFAULTS = ImageWorkflow(
     None,  # inpainting_prompt
     int(config["SD15_GENERATION_DEFAULTS"]["INPAINTING_DETECTION_THRESHOLD"]),  # inpainting_detection_threshold
     int(config["SDXL_GENERATION_DEFAULTS"]["CLIP_SKIP"]),  # clip_skip
+    llm_profile=config["SD15_GENERATION_DEFAULTS"]["LLM_PROFILE"],
 )
 
 SDXL_GENERATION_DEFAULTS = ImageWorkflow(
@@ -53,7 +54,8 @@ SDXL_GENERATION_DEFAULTS = ImageWorkflow(
     config["SDXL_GENERATION_DEFAULTS"]["SCHEDULER"],
     style_prompt=config["SDXL_GENERATION_DEFAULTS"]["DEFAULT_STYLE_PROMPT"],
     negative_style_prompt=config["SDXL_GENERATION_DEFAULTS"]["DEFAULT_NEGATIVE_STYLE_PROMPT"],
-    detailing_controlnet=config["SDXL_GENERATION_DEFAULTS"]["DETAILING_CONTROLNET"]
+    detailing_controlnet=config["SDXL_GENERATION_DEFAULTS"]["DETAILING_CONTROLNET"],
+    llm_profile=config["SDXL_GENERATION_DEFAULTS"]["LLM_PROFILE"],
 )
 
 CASCADE_GENERATION_DEFAULTS = ImageWorkflow(
@@ -76,6 +78,7 @@ CASCADE_GENERATION_DEFAULTS = ImageWorkflow(
     None,  # inpainting_prompt
     int(config["SDXL_GENERATION_DEFAULTS"]["INPAINTING_DETECTION_THRESHOLD"]),  # inpainting_detection_threshold
     int(config["SDXL_GENERATION_DEFAULTS"]["CLIP_SKIP"]),  # clip_skip
+    llm_profile=config["CASCADE_GENERATION_DEFAULTS"]["LLM_PROFILE"],
 )
 
 VIDEO_GENERATION_DEFAULTS = ImageWorkflow(
@@ -125,6 +128,7 @@ PONY_GENERATION_DEFAULTS = ImageWorkflow(
     negative_style_prompt=config["PONY_GENERATION_DEFAULTS"]["DEFAULT_NEGATIVE_STYLE_PROMPT"],
     vae=config["PONY_GENERATION_DEFAULTS"]["VAE"],
     detailing_controlnet=config["PONY_GENERATION_DEFAULTS"]["DETAILING_CONTROLNET"],
+    llm_profile=config["PONY_GENERATION_DEFAULTS"]["LLM_PROFILE"],
 )
 
 ADD_DETAIL_DEFAULTS = ImageWorkflow(

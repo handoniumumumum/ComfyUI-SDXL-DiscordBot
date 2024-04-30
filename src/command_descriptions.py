@@ -48,6 +48,7 @@ SDXL_MODEL_CHOICES = [Choice(name=m.replace(".safetensors", ""), value=m) for m 
 SDXL_LORA_CHOICES = [Choice(name=l.replace(".safetensors", ""), value=l) for l in loras if not should_filter_model(l, "sdxl")]
 PONY_MODEL_CHOICES = [Choice(name=m.replace(".safetensors", ""), value=m) for m in models if not should_filter_model(m, "pony")]
 PONY_LORA_CHOICES = [Choice(name=l.replace(".safetensors", ""), value=l) for l in loras if not should_filter_model(l, "pony")]
+CASCADE_LORA_CHOICES = [Choice(name=l.replace(".safetensors", ""), value=l) for l in loras if not should_filter_model(l, "cascade")]
 SAMPLER_CHOICES = [Choice(name=s, value=s) for s in samplers]
 
 COMMAND_MODEL_CHOICES = {
@@ -60,6 +61,7 @@ COMMAND_LORA_CHOICES = {
     "sdxl": SDXL_LORA_CHOICES,
     "legacy": SD15_LORA_CHOICES,
     "pony": PONY_LORA_CHOICES,
+    "cascade": CASCADE_LORA_CHOICES,
 }
 
 BASE_ARG_DESCS = {
@@ -104,6 +106,8 @@ VIDEO_ARG_DESCS = {
 
 CASCADE_ARG_DESCS = {
     **BASE_ARG_DESCS,
+    "lora": "LoRA to apply",
+    "lora_strength": "Strength of LoRA",
     "aspect_ratio": "Aspect ratio of the generated image",
     "num_steps": f"range [1, {MAX_STEPS}]; Number of sampling steps",
     "cfg_scale": f"range [1.0, {MAX_CFG}]; Degree to which AI should follow prompt",
@@ -139,6 +143,8 @@ SDXL_ARG_CHOICES = {
 }
 CASCADE_ARG_CHOICES = {
     "aspect_ratio": ASPECT_RATIO_CHOICES,
+    "lora": CASCADE_LORA_CHOICES[:25],
+    "lora2": CASCADE_LORA_CHOICES[:25],
 }
 VIDEO_ARG_CHOICES = {k: v for k, v in IMAGINE_ARG_CHOICES.items() if k not in {"lora2", "lora3", "aspect_ratio"}}
 

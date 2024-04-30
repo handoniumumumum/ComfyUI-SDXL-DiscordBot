@@ -41,6 +41,7 @@ class ImageGenCommands:
             inpainting_prompt: str = None,
             inpainting_detection_threshold: Range[int, 0, 255] = None,
             clip_skip: Range[int, -2, -1] = None,
+            use_llm: Optional[bool] = None,
         ):
             if input_file is not None:
                 fp = await process_attachment(input_file, interaction)
@@ -70,6 +71,7 @@ class ImageGenCommands:
                 inpainting_prompt=inpainting_prompt,
                 inpainting_detection_threshold=inpainting_detection_threshold or SD15_GENERATION_DEFAULTS.inpainting_detection_threshold,
                 clip_skip=clip_skip or SD15_GENERATION_DEFAULTS.clip_skip,
+                use_llm=use_llm or False
             )
             await self._do_request(
                 interaction,
@@ -131,6 +133,10 @@ class ImageGenCommands:
             interaction: discord.Interaction,
             prompt: str,
             negative_prompt: str = None,
+            lora: Choice[str] = None,
+            lora_strength: float = 1.0,
+            lora2: Choice[str] = None,
+            lora_strength2: float = 1.0,
             aspect_ratio: str = None,
             num_steps: Range[int, 1, MAX_STEPS] = None,
             cfg_scale: Range[float, 1.0, MAX_CFG] = None,
@@ -141,6 +147,7 @@ class ImageGenCommands:
             inpainting_prompt: str = None,
             inpainting_detection_threshold: Range[int, 0, 255] = None,
             clip_skip: Range[int, -2, -1] = None,
+            use_llm: Optional[bool] = None,
         ):
             if input_file is not None:
                 fp = await process_attachment(input_file, interaction)
@@ -162,6 +169,8 @@ class ImageGenCommands:
                 prompt,
                 negative_prompt,
                 CASCADE_GENERATION_DEFAULTS.model,
+                loras=unpack_choices(lora, lora2),
+                lora_strengths=[lora_strength, lora_strength2],
                 dimensions=sd_aspect_ratios[aspect_ratio] if aspect_ratio else sd_aspect_ratios[CASCADE_GENERATION_DEFAULTS.dimensions],
                 sampler=CASCADE_GENERATION_DEFAULTS.sampler,
                 num_steps=num_steps or CASCADE_GENERATION_DEFAULTS.num_steps,
@@ -174,6 +183,7 @@ class ImageGenCommands:
                 inpainting_prompt=inpainting_prompt,
                 inpainting_detection_threshold=inpainting_detection_threshold or CASCADE_GENERATION_DEFAULTS.inpainting_detection_threshold,
                 clip_skip=clip_skip or CASCADE_GENERATION_DEFAULTS.clip_skip,
+                use_llm=use_llm or False,
             )
 
             await self._do_request(
@@ -274,6 +284,7 @@ class SDXLCommand(ImageGenCommands):
             use_accelerator_lora: Optional[bool] = None,
             style_prompt: Optional[str] = None,
             negative_style_prompt: Optional[str] = None,
+            use_llm: Optional[bool] = None,
         ):
             if input_file is not None:
                 fp = await process_attachment(input_file, interaction)
@@ -312,7 +323,7 @@ class SDXLCommand(ImageGenCommands):
                 style_prompt=style_prompt or defaults.style_prompt,
                 negative_style_prompt=negative_style_prompt or defaults.negative_style_prompt,
                 detailing_controlnet=defaults.detailing_controlnet,
-                use_llm=bool(config["LLM"]["use_llm"]) and self.command_name == "imagine",
+                use_llm=use_llm or (bool(config["LLM"]["use_llm"]) and self.command_name == "imagine"),
             )
 
             await self._do_request(

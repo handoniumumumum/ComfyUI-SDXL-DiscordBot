@@ -38,6 +38,7 @@ SCHEDULER=sgm_uniform
 DEFAULT_STYLE_PROMPT=
 DEFAULT_NEGATIVE_STYLE_PROMPT=
 DETAILING_CONTROLNET=XL/controlllite_xl_tile_realistic.safetensors
+LLM_PROFILE=IF_PromptMKR
 
 [SD15_GENERATION_DEFAULTS]
 MODEL=rundiffusionFX_v10.safetensors
@@ -49,6 +50,7 @@ DENOISE_STRENGTH=0.8
 SAMPLER=ddim
 INPAINTING_DETECTION_THRESHOLD=200
 CLIP_SKIP=-2
+LLM_PROFILE=IF_PromptMKR_IMG
 
 [VIDEO_GENERATION_DEFAULTS]
 MODEL=svd/svd_xt_1_1.safetensors
@@ -71,6 +73,7 @@ SAMPLER=euler_ancestral
 SCHEDULER=simple
 ASPECT_RATIO=1:1
 DENOISE_STRENGTH=0.8
+LLM_PROFILE=IF_PromptMKR
 
 [PONY_GENERATION_DEFAULTS]
 MODEL=pony/ponyDiffusionV6.safetensors
@@ -89,6 +92,7 @@ DEFAULT_STYLE_PROMPT=score_9, score_8_up, score_7_up, score_6_up, score_5_up
 DEFAULT_NEGATIVE_STYLE_PROMPT=worst quality, bad quality, low quality, deformed, blurry, censored, bad anatomy, watermark, signature, bad artist, lowres, missing limbs, missing hands, missing fingers, extra fingers, extra hands, extra digits, malformed face, loli, kid, kids, children
 VAE=pony/pony_vae.safetensors
 DETAILING_CONTROLNET=pony/bdsqlsz_controlllite_xl_tile_anime.safetensors
+LLM_PROFILE=IF_PromptMKR_IMG
 
 [ADD_DETAIL_DEFAULTS]
 DENOISE_STRENGTH=0.3

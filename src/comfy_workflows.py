@@ -120,7 +120,7 @@ async def _do_video(params: ImageWorkflow, model_type: ModelType, loras: list[Lo
     return [final_video]
 
 
-def process_prompt_with_llm(positive_prompt: str, seed: int):
+def process_prompt_with_llm(positive_prompt: str, seed: int, profile: str):
     from src.defaults import llm_prompt, llm_parameters
 
     prompt_text = llm_prompt + "\n" + positive_prompt
@@ -130,7 +130,7 @@ def process_prompt_with_llm(positive_prompt: str, seed: int):
         base_ip=llm_parameters["API_URL"],
         port=llm_parameters["API_PORT"],
         selected_model=llm_parameters["MODEL_NAME"],
-        profile=IFChatPrompt.profile.IF_PromptMKR,
+        profile=profile,
         seed=seed,
         random=True,
     )
@@ -191,7 +191,7 @@ async def do_workflow(params: ImageWorkflow, interaction: discord.Interaction):
                 params.cfg_scale = 5.0
 
             if params.use_llm is True:
-                enhanced_prompt = process_prompt_with_llm(params.prompt, params.seed)
+                enhanced_prompt = process_prompt_with_llm(params.prompt, params.seed, params.llm_profile)
                 prompt_result = await IFDisplayText(enhanced_prompt)
                 params.prompt = prompt_result._output["string"][0]
 

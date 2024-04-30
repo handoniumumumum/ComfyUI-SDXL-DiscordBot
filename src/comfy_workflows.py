@@ -124,8 +124,8 @@ def process_prompt_with_llm(positive_prompt: str, seed: int, profile: str):
     from src.defaults import llm_prompt, llm_parameters
 
     prompt_text = llm_prompt + "\n" + positive_prompt
-    _, prompt = IFChatPrompt(
-        image_prompt=prompt_text,
+    _, prompt, _ = IFPromptMkr(
+        input_prompt=prompt_text,
         engine=IFChatPrompt.engine.ollama,
         base_ip=llm_parameters["API_URL"],
         port=llm_parameters["API_PORT"],
@@ -133,7 +133,6 @@ def process_prompt_with_llm(positive_prompt: str, seed: int, profile: str):
         profile=profile,
         seed=seed,
         random=True,
-        temperature=0.2,
     )
     return prompt
 
@@ -195,6 +194,14 @@ async def do_workflow(params: ImageWorkflow, interaction: discord.Interaction):
                 enhanced_prompt = process_prompt_with_llm(params.prompt, params.seed, params.llm_profile)
                 prompt_result = await IFDisplayText(enhanced_prompt)
                 params.prompt = prompt_result._output["string"][0]
+
+            if params.style_prompt is not None and params.style_prompt not in params.prompt:
+                params.prompt = params.style_prompt + "\n" + params.prompt
+            if params.negative_style_prompt is not None and (params.negative_prompt is None or params.negative_style_prompt not in params.negative_prompt):
+                params.negative_prompt = params.negative_style_prompt + "\n" + (params.negative_prompt or "")
+
+            params.style_prompt = None
+            params.negative_style_prompt = None
 
             result = await workflow_type_to_method[params.workflow_type](params, params.model_type, loras, interaction)
 

@@ -23,8 +23,10 @@ class EditableButton:
         await task
 
     async def _edit_image(self, interaction, button):
-        modal = EditModal(self.params, self.command)
-        await interaction.response.send_modal(modal)
+        # modal = EditModal(self.params, self.command)
+        # await interaction.response.send_modal(modal)
+        edit_view = EditResponse(self.params, self.command)
+        await edit_view.show_edit_message(interaction)
 
 
 class RerollableButton:
@@ -136,13 +138,13 @@ class AddDetailDropdown(discord.ui.Select):
 
 class Buttons(discord.ui.View, EditableButton, RerollableButton, DeletableButton, InfoableButton):
     def __init__(
-        self,
-        params,
-        images,
-        author,
-        *,
-        timeout=None,
-        command=None,
+            self,
+            params,
+            images,
+            author,
+            *,
+            timeout=None,
+            command=None,
     ):
         if images is None:
             return
@@ -314,77 +316,171 @@ class AddDetailButtons(discord.ui.View, DeletableButton, InfoableButton):
         )
 
 
-class EditModal(ui.Modal, title="Edit Image"):
+class EditResponse(discord.ui.View):
     def __init__(self, params: ImageWorkflow, command: str):
-        super().__init__(timeout=120)
+        super().__init__(timeout=None)
         self.params = params
         self.command = command
 
-        self.is_video = command == "video"
+    @discord.ui.button(label="Prompts", style=discord.ButtonStyle.blurple, emoji="📝", row=0)
+    async def edit_prompts(self, interaction, button):
+        class EditPromptModal(discord.ui.Modal, title="Edit Prompts"):
+            def __init__(self, params: ImageWorkflow, command: str, owner: EditResponse):
+                super().__init__(timeout=None)
+                self.params = params
+                self.command = command
+                self.owner = owner
 
-        self.prompt = ui.TextInput(
-            label="Prompt", placeholder="Enter a prompt", min_length=1, max_length=2048, default=self.params.prompt or "", style=discord.TextStyle.paragraph
-        )
-        self.negative_prompt = ui.TextInput(
-            label="Negative Prompt", placeholder="Enter a negative prompt", required=False, default=self.params.negative_prompt or ""
-        )
-        self.num_steps = ui.TextInput(label="Number of Steps", placeholder="Enter a number of steps", default=str(self.params.num_steps))
-        self.cfg_scale = ui.TextInput(label="Guidance Scale", placeholder="Enter a CFG scale", default=str(self.params.cfg_scale))
-        self.seed = ui.TextInput(label="Seed", placeholder="Enter a seed", required=False, default=str(self.params.seed))
+                self.positive_prompt = discord.ui.TextInput(
+                    label="Prompt",
+                    placeholder="Enter a prompt",
+                    required=True,
+                    default=self.params.prompt,
+                )
 
-        self.add_item(self.prompt)
-        self.add_item(self.negative_prompt)
-        self.add_item(self.num_steps)
-        self.add_item(self.cfg_scale)
-        self.add_item(self.seed)
+                self.negative_prompt = discord.ui.TextInput(
+                    label="Negative Prompt",
+                    placeholder="Enter a negative prompt",
+                    required=False,
+                    default=self.params.negative_prompt or "",
+                )
 
-    async def on_submit(self, interaction: discord.Interaction) -> None:
-        await interaction.response.send_message("Generating image with new parameters, this shouldn't take too long...")
+                self.add_item(self.positive_prompt)
+                self.add_item(self.negative_prompt)
 
-        params = deepcopy(self.params)
-        params.prompt = self.prompt.value
-        params.negative_prompt = self.negative_prompt.value
-        params.num_steps = int(self.num_steps.value)
-        params.cfg_scale = float(self.cfg_scale.value)
-        params.seed = int(self.seed.value) if self.seed.value else None
+            async def on_submit(self, interaction):
+                params = deepcopy(self.params)
+                params.prompt = self.positive_prompt.value
+                params.negative_prompt = self.negative_prompt.value
 
-        if params.seed is None:
-            params.seed = random.randint(0, 999999999999999)
+                await self.owner.generate_with_new_params(interaction, params)
 
+        prompt_modal = EditPromptModal(self.params, self.command, self)
+        await interaction.response.send_modal(prompt_modal)
+
+    @discord.ui.button(label="Models", style=discord.ButtonStyle.blurple, emoji="🤖", row=0)
+    async def edit_models(self, interaction, button):
+        class EditModelModal(discord.ui.Modal, title="Edit Models"):
+            def __init__(self, params: ImageWorkflow, command: str, owner: EditResponse):
+                super().__init__(timeout=None)
+                self.params = params
+                self.command = command
+                self.owner = owner
+
+                self.model_selection = discord.ui.TextInput(
+                    label="Model",
+                    placeholder="Select a model",
+                    required=True,
+                    default=self.params.model,
+                )
+
+                self.lora_selection_1 = discord.ui.TextInput(
+                    label="LoRA 1",
+                    placeholder="Select a LoRA",
+                    required=False,
+                    default=self.params.loras[0] or "",
+                )
+
+                self.lora_strength_1 = discord.ui.TextInput(
+                    label="LoRA 1 Strength",
+                    placeholder="Select a LoRA Strength",
+                    required=False,
+                    default=str(self.params.lora_strengths[0] or 1.0),
+                )
+
+                self.lora_selection_2 = discord.ui.TextInput(
+                    label="LoRA 2",
+                    placeholder="Select a LoRA",
+                    required=False,
+                    default=self.params.loras[1] or "",
+                )
+
+                self.lora_strength_2 = discord.ui.TextInput(
+                    label="LoRA 2 Strength",
+                    placeholder="Select a LoRA Strength",
+                    required=False,
+                    default=str(self.params.lora_strengths[1] or 1.0),
+                )
+
+                self.add_item(self.model_selection)
+                self.add_item(self.lora_selection_1)
+                self.add_item(self.lora_strength_1)
+                self.add_item(self.lora_selection_2)
+                self.add_item(self.lora_strength_2)
+
+            async def on_submit(self, interaction):
+                params = deepcopy(self.params)
+                params.model = self.model_selection.value
+                if self.lora_selection_1.value:
+                    params.loras.append(self.lora_selection_1.value)
+                    params.lora_strengths.append(float(self.lora_strength_1.value))
+                if self.lora_selection_2.value:
+                    params.loras.append(self.lora_selection_2.value)
+                    params.lora_strengths.append(float(self.lora_strength_2.value))
+
+                await self.owner.generate_with_new_params(interaction, params)
+
+        model_modal = EditModelModal(self.params, self.command, self)
+        await interaction.response.send_modal(model_modal)
+
+    @discord.ui.button(label="Sampler Parameters", style=discord.ButtonStyle.blurple, emoji="📊", row=0)
+    async def edit_sampler_params(self, interaction, button):
+        class EditSamplerModal(discord.ui.Modal, title="Edit Sampler Parameters"):
+            def __init__(self, params: ImageWorkflow, command: str, owner: EditResponse):
+                super().__init__(timeout=None)
+                self.params = params
+                self.command = command
+                self.owner = owner
+
+                self.num_steps = discord.ui.TextInput(
+                    label="Num Steps",
+                    placeholder="Select number of steps",
+                    required=False,
+                    default=str(self.params.num_steps),
+                )
+
+                self.cfg_scale = discord.ui.TextInput(
+                    label="CFG Scale",
+                    placeholder="Select CFG scale",
+                    required=False,
+                    default=str(self.params.cfg_scale),
+                )
+
+                self.seed = discord.ui.TextInput(
+                    label="Seed",
+                    placeholder="Select seed",
+                    required=False,
+                    default=str(self.params.seed),
+                )
+
+                self.add_item(self.num_steps)
+                self.add_item(self.cfg_scale)
+                self.add_item(self.seed)
+
+            async def on_submit(self, interaction):
+                params = deepcopy(self.params)
+                params.num_steps = int(self.num_steps.value)
+                params.cfg_scale = float(self.cfg_scale.value)
+                params.seed = int(self.seed.value)
+
+                await self.owner.generate_with_new_params(interaction, params)
+
+        sampler_modal = EditSamplerModal(self.params, self.command, self)
+        await interaction.response.send_modal(sampler_modal)
+
+    async def generate_with_new_params(self, interaction, params):
+        await interaction.response.send_message(f"Generating image with new parameters, this shouldn't take too long...")
         images = await do_workflow(params, interaction)
-
         # Construct the final message with user mention
-        final_message = f'{interaction.user.mention} asked me to re-imagine "{self.prompt}", here is what I imagined for them. Seed: {self.params.seed}'
+        final_message = f'{interaction.user.mention} asked me to re-imagine "{self.params.prompt}", here is what I imagined for them. Seed: {self.params.seed}'
         buttons = Buttons(params, images, interaction.user, command=self.command)
-
-        if self.is_video:
+        if self.command == "video":
             collage = create_gif_collage(images)
             fname = "collage.gif"
         else:
             collage = create_collage(images)
             fname = "collage.png"
-
         await interaction.channel.send(content=final_message, file=discord.File(fp=collage, filename=fname), view=buttons)
 
-    async def interaction_check(self, interaction: discord.Interaction, /) -> bool:
-        if self.num_steps.value.isnumeric() == False:
-            await self.on_error(interaction, Exception("Number of steps must be an integer"))
-            return False
-
-        if self.cfg_scale.value.replace(".", "").isnumeric() == False:
-            await self.on_error(interaction, Exception("CFG scale must be a float"))
-            return False
-
-        if int(self.num_steps.value) < 0 or int(self.num_steps.value) > MAX_STEPS:
-            await self.on_error(interaction, Exception(f"Number of steps must be between 0 and {MAX_STEPS}"))
-            return False
-
-        if float(self.cfg_scale.value) < 1 or float(self.cfg_scale.value) > MAX_CFG:
-            await self.on_error(interaction, Exception(f"CFG scale must be between 1 and {MAX_CFG}"))
-            return False
-
-        if self.seed.value != None and self.seed.value != "" and int(self.seed.value) > 1 << 50:
-            await self.on_error(interaction, Exception("Seed must be less than 2^50"))
-            return False
-
-        return True
+    async def show_edit_message(self, interaction):
+        await interaction.response.send_message("Here are some options to edit your images!", view=self, ephemeral=True)

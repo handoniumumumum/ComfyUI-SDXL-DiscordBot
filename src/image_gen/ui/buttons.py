@@ -472,7 +472,7 @@ class EditResponse(discord.ui.View):
         await interaction.response.send_message(f"Generating image with new parameters, this shouldn't take too long...")
         images = await do_workflow(params, interaction)
         # Construct the final message with user mention
-        final_message = f'{interaction.user.mention} asked me to re-imagine "{self.params.prompt}", here is what I imagined for them. Seed: {self.params.seed}'
+        final_message = f'{interaction.user.mention} asked me to re-imagine "{params.prompt}", here is what I imagined for them. Seed: {params.seed}'
         buttons = Buttons(params, images, interaction.user, command=self.command)
         if self.command == "video":
             collage = create_gif_collage(images)

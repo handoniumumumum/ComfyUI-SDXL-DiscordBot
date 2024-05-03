@@ -6,10 +6,9 @@ from datetime import datetime
 
 import discord
 import discord.ext
-from discord import ui, SelectOption
+from discord import SelectOption
 
 from src.comfy_workflows import do_workflow
-from src.consts import *
 from src.defaults import *
 from src.image_gen.collage_utils import create_collage, create_gif_collage
 from src.util import get_filename, build_command
@@ -374,7 +373,7 @@ class EditResponse(discord.ui.View):
                     label="LoRA 1",
                     placeholder="Select a LoRA",
                     required=False,
-                    default=self.params.loras[0] if len(self.params.loras) > 0 else "",
+                    default=self.params.loras[0].replace(".safetensors", "") if len(self.params.loras) > 0 and self.params.loras[0] else "",
                 )
 
                 self.lora_strength_1 = discord.ui.TextInput(
@@ -388,7 +387,7 @@ class EditResponse(discord.ui.View):
                     label="LoRA 2",
                     placeholder="Select a LoRA",
                     required=False,
-                    default=self.params.loras[1] if len(self.params.loras) > 1 else "",
+                    default=self.params.loras[1].replace(".safetensors", "") if len(self.params.loras) > 1 and self.params.loras[1] else "",
                 )
 
                 self.lora_strength_2 = discord.ui.TextInput(
@@ -405,15 +404,18 @@ class EditResponse(discord.ui.View):
                 self.add_item(self.lora_strength_2)
 
             async def on_submit(self, interaction):
+                from src.command_descriptions import loras
                 params = deepcopy(self.params)
                 params.model = self.model_selection.value
                 params.loras = []
                 params.lora_strengths = []
                 if self.lora_selection_1.value:
-                    params.loras.append(self.lora_selection_1.value)
+                    lora = next((lora for lora in loras if self.lora_selection_1.value in lora), self.lora_selection_1.value)
+                    params.loras.append(lora)
                     params.lora_strengths.append(float(self.lora_strength_1.value))
                 if self.lora_selection_2.value:
-                    params.loras.append(self.lora_selection_2.value)
+                    lora = next((lora for lora in loras if self.lora_selection_2.value in lora), self.lora_selection_2.value)
+                    params.loras.append(lora)
                     params.lora_strengths.append(float(self.lora_strength_2.value))
 
                 await self.owner.generate_with_new_params(interaction, params)

@@ -23,8 +23,6 @@ class EditableButton:
         await task
 
     async def _edit_image(self, interaction, button):
-        # modal = EditModal(self.params, self.command)
-        # await interaction.response.send_modal(modal)
         edit_view = EditResponse(self.params, self.command)
         await edit_view.show_edit_message(interaction)
 
@@ -213,7 +211,6 @@ class Buttons(discord.ui.View, EditableButton, RerollableButton, DeletableButton
 
         buttons = Buttons(params, images, interaction.user, command=self.command)
 
-        # if a gif, set filename as gif, otherwise png
         fname = "collage.gif" if images[0].format == "GIF" else "collage.png"
         await interaction.channel.send(content=final_message, file=discord.File(fp=collage_path, filename=fname), view=buttons)
 
@@ -290,7 +287,6 @@ class AddDetailButtons(discord.ui.View, DeletableButton, InfoableButton):
     async def _add_detail(self, interaction, value):
         await interaction.response.send_message("Increasing detail in the image, this shouldn't take too long...")
 
-        # do img2img
         params = deepcopy(self.params)
         params.workflow_type = WorkflowType.add_detail
         params.denoise_strength = value
@@ -378,28 +374,28 @@ class EditResponse(discord.ui.View):
                     label="LoRA 1",
                     placeholder="Select a LoRA",
                     required=False,
-                    default=self.params.loras[0] or "",
+                    default=self.params.loras[0] if len(self.params.loras) > 0 else "",
                 )
 
                 self.lora_strength_1 = discord.ui.TextInput(
                     label="LoRA 1 Strength",
                     placeholder="Select a LoRA Strength",
                     required=False,
-                    default=str(self.params.lora_strengths[0] or 1.0),
+                    default=str(self.params.lora_strengths[0] if len(self.params.loras) > 0 else 1.0),
                 )
 
                 self.lora_selection_2 = discord.ui.TextInput(
                     label="LoRA 2",
                     placeholder="Select a LoRA",
                     required=False,
-                    default=self.params.loras[1] or "",
+                    default=self.params.loras[1] if len(self.params.loras) > 1 else "",
                 )
 
                 self.lora_strength_2 = discord.ui.TextInput(
                     label="LoRA 2 Strength",
                     placeholder="Select a LoRA Strength",
                     required=False,
-                    default=str(self.params.lora_strengths[1] or 1.0),
+                    default=str(self.params.lora_strengths[1] if len(self.params.loras) > 1 else 1.0),
                 )
 
                 self.add_item(self.model_selection)
@@ -411,6 +407,8 @@ class EditResponse(discord.ui.View):
             async def on_submit(self, interaction):
                 params = deepcopy(self.params)
                 params.model = self.model_selection.value
+                params.loras = []
+                params.lora_strengths = []
                 if self.lora_selection_1.value:
                     params.loras.append(self.lora_selection_1.value)
                     params.lora_strengths.append(float(self.lora_strength_1.value))
@@ -471,7 +469,6 @@ class EditResponse(discord.ui.View):
     async def generate_with_new_params(self, interaction, params):
         await interaction.response.send_message(f"Generating image with new parameters, this shouldn't take too long...")
         images = await do_workflow(params, interaction)
-        # Construct the final message with user mention
         final_message = f'{interaction.user.mention} asked me to re-imagine "{params.prompt}", here is what I imagined for them. Seed: {params.seed}'
         buttons = Buttons(params, images, interaction.user, command=self.command)
         if self.command == "video":

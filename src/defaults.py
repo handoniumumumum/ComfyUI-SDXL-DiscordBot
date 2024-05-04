@@ -25,6 +25,7 @@ SD15_GENERATION_DEFAULTS = ImageWorkflow(
     None,  # inpainting_prompt
     int(config["SD15_GENERATION_DEFAULTS"]["INPAINTING_DETECTION_THRESHOLD"]),  # inpainting_detection_threshold
     int(config["SDXL_GENERATION_DEFAULTS"]["CLIP_SKIP"]),  # clip_skip
+    scheduler=config["SD15_GENERATION_DEFAULTS"]["SCHEDULER"] if "SCHEDULER" in config["SD15_GENERATION_DEFAULTS"] else None,
     llm_profile=config["SD15_GENERATION_DEFAULTS"]["LLM_PROFILE"],
 )
 

@@ -455,15 +455,33 @@ class EditResponse(discord.ui.View):
                     default=str(self.params.seed),
                 )
 
+                self.sampler = discord.ui.TextInput(
+                    label="Sampler",
+                    placeholder="Select sampler",
+                    required=False,
+                    default=str(self.params.sampler),
+                )
+
+                self.scheduler = discord.ui.TextInput(
+                    label="Scheduler",
+                    placeholder="Select scheduler",
+                    required=False,
+                    default=str(self.params.scheduler or "normal"),
+                )
+
                 self.add_item(self.num_steps)
                 self.add_item(self.cfg_scale)
                 self.add_item(self.seed)
+                self.add_item(self.sampler)
+                self.add_item(self.scheduler)
 
             async def on_submit(self, interaction):
                 params = deepcopy(self.params)
                 params.num_steps = int(self.num_steps.value)
                 params.cfg_scale = float(self.cfg_scale.value)
                 params.seed = int(self.seed.value)
+                params.sampler = self.sampler.value
+                params.scheduler = self.scheduler.value
 
                 await self.owner.generate_with_new_params(interaction, params)
 

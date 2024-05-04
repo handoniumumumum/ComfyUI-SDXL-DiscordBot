@@ -33,6 +33,7 @@ class ImageGenCommands:
             lora_strength2: float = 1.0,
             aspect_ratio: str = None,
             sampler: str = None,
+            scheduler: str = None,
             num_steps: Range[int, 1, MAX_STEPS] = None,
             cfg_scale: Range[float, 1.0, MAX_CFG] = None,
             seed: int = None,
@@ -71,7 +72,8 @@ class ImageGenCommands:
                 inpainting_prompt=inpainting_prompt,
                 inpainting_detection_threshold=inpainting_detection_threshold or SD15_GENERATION_DEFAULTS.inpainting_detection_threshold,
                 clip_skip=clip_skip or SD15_GENERATION_DEFAULTS.clip_skip,
-                use_llm=use_llm or False
+                use_llm=use_llm or False,
+                scheduler=scheduler or SD15_GENERATION_DEFAULTS.scheduler,
             )
             await self._do_request(
                 interaction,
@@ -268,6 +270,7 @@ class SDXLCommand(ImageGenCommands):
             lora_strength2: float = 1.0,
             aspect_ratio: str = None,
             sampler: str = None,
+            scheduler: str = None,
             num_steps: Range[int, 1, MAX_STEPS] = None,
             cfg_scale: Range[float, 1.0, MAX_CFG] = None,
             seed: int = None,
@@ -314,7 +317,7 @@ class SDXLCommand(ImageGenCommands):
                     if use_accelerator_lora or (use_accelerator_lora is None and defaults.use_accelerator_lora)
                     else None
                 ),
-                scheduler=defaults.scheduler,
+                scheduler=scheduler or defaults.scheduler,
                 style_prompt=style_prompt or defaults.style_prompt,
                 negative_style_prompt=negative_style_prompt or defaults.negative_style_prompt,
                 detailing_controlnet=defaults.detailing_controlnet,

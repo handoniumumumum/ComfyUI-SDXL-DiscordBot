@@ -2,13 +2,14 @@ import json
 
 from discord.app_commands import Choice
 
-from src.comfyscript_utils import get_models, get_loras, get_samplers
+from src.comfyscript_utils import get_models, get_loras, get_samplers, get_schedulers
 from src.consts import *
 from src.defaults import *
 
 models = get_models()
 loras = get_loras()
 samplers = get_samplers()
+schedulers = get_schedulers()
 
 generation_messages = json.loads(open("./data/generation_messages.json", "r").read())
 completion_messages = json.loads(open("./data/completion_messages.json", "r").read())
@@ -49,7 +50,8 @@ SDXL_LORA_CHOICES = [Choice(name=l.replace(".safetensors", ""), value=l) for l i
 PONY_MODEL_CHOICES = [Choice(name=m.replace(".safetensors", ""), value=m) for m in models if not should_filter_model(m, "pony")]
 PONY_LORA_CHOICES = [Choice(name=l.replace(".safetensors", ""), value=l) for l in loras if not should_filter_model(l, "pony")]
 CASCADE_LORA_CHOICES = [Choice(name=l.replace(".safetensors", ""), value=l) for l in loras if not should_filter_model(l, "cascade")]
-SAMPLER_CHOICES = [Choice(name=s, value=s) for s in samplers]
+SAMPLER_CHOICES = [Choice(name=s, value=s) for s in samplers if "adaptive" not in s.lower()]
+SCHEDULER_CHOICES = [Choice(name=s, value=s) for s in schedulers]
 
 COMMAND_MODEL_CHOICES = {
     "sdxl": SDXL_MODEL_CHOICES,
@@ -76,6 +78,7 @@ IMAGE_GEN_DESCS = {
     "sampler": "Sampling algorithm to use",
     "num_steps": f"range [1, {MAX_STEPS}]; Number of sampling steps",
     "cfg_scale": f"range [1.0, {MAX_CFG}]; Degree to which AI should follow prompt",
+    "scheduler": "Changes which noise scheduler applies to the image. Use in conjunction with sampler",
 }
 IMAGINE_ARG_DESCS = {
     **BASE_ARG_DESCS,
@@ -128,6 +131,7 @@ PONY_ARG_DESCS = {
 BASE_ARG_CHOICES = {
     "aspect_ratio": ASPECT_RATIO_CHOICES,
     "sampler": SAMPLER_CHOICES,
+    "scheduler": SCHEDULER_CHOICES
 }
 IMAGINE_ARG_CHOICES = {
     "model": SD15_MODEL_CHOICES[:25],

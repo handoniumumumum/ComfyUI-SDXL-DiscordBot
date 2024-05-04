@@ -54,7 +54,7 @@ class SDWorkflow:
 
     def condition_prompts(self, positive_prompt: str, negative_prompt: str):
         self.conditioning = CLIPTextEncode(positive_prompt, self.clip)
-        self.negative_conditioning = CLIPTextEncode(negative_prompt, self.clip)
+        self.negative_conditioning = CLIPTextEncode(negative_prompt or "", self.clip)
 
     def condition_for_detailing(self, controlnet_name, image):
         pass

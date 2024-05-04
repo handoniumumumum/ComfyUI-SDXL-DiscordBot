@@ -35,6 +35,11 @@ def get_samplers():
     samplers = [sampler.value for sampler in Samplers]
     return samplers
 
+def get_schedulers():
+    from comfy_script.runtime.nodes import Schedulers
+    schedulers = [scheduler.value for scheduler in Schedulers]
+    return schedulers
+
 def get_tortoise_voices():
     from comfy_script.runtime.nodes import TortoiseTTSGenerate
     voices = [voice.value for voice in TortoiseTTSGenerate.voice]

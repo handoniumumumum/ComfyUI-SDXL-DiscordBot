@@ -331,6 +331,7 @@ class EditResponse(discord.ui.View):
                     placeholder="Enter a prompt",
                     required=True,
                     default=self.params.prompt,
+                    style=discord.TextStyle.paragraph
                 )
 
                 self.negative_prompt = discord.ui.TextInput(
@@ -338,6 +339,7 @@ class EditResponse(discord.ui.View):
                     placeholder="Enter a negative prompt",
                     required=False,
                     default=self.params.negative_prompt or "",
+                    style=discord.TextStyle.paragraph
                 )
 
                 self.add_item(self.positive_prompt)

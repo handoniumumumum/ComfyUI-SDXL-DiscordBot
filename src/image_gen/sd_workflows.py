@@ -32,6 +32,7 @@ class SDWorkflow:
         self.model = model
         self.clip = clip
         self.vae = vae
+        self.clip_vision = None
 
     def create_latents(self, dimensions: tuple[int, int], batches: int):
         width, height = dimensions
@@ -64,6 +65,17 @@ class SDWorkflow:
         masking, _ = CLIPSegMasking(image_input, inpainting_prompt, clip_seg_model)
         masking = MaskDominantRegion(masking, threshold)
         self.latents[0] = SetLatentNoiseMask(self.latents[0], masking)
+
+    def unclip_encode(self, image_input: list[Image]):
+        if self.clip_vision is None:
+            self.clip_vision = CLIPVisionLoader(CLIPVisions.CLIP_ViT_bigG_14_laion2B_39B_b160k)
+        for input in image_input:
+            if input is None:
+                continue
+            self.model, self.ip_adapter = IPAdapterUnifiedLoader(self.model, IPAdapterUnifiedLoader.preset.STANDARD_medium_strength)
+            self.model = IPAdapter(self.model, self.ip_adapter, input)
+            encoded_clip_vision = CLIPVisionEncode(self.clip_vision, input)
+            self.conditioning = UnCLIPConditioning(self.conditioning, encoded_clip_vision)
 
     def sample(self, seed: int, num_samples: int, cfg_scale: float, sampler_name: str, scheduler: str, denoise_strength: float = 1):
         self.output_latents = KSampler(self.model, seed, num_samples, cfg_scale, sampler_name, scheduler, self.conditioning, self.negative_conditioning, self.latents[0], denoise_strength)

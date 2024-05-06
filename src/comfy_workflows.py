@@ -78,7 +78,7 @@ async def _do_add_detail(params: ImageWorkflow, model_type: ModelType, loras: li
 async def _do_image_mashup(params: ImageWorkflow, model_type: ModelType, loras: list[Lora], interaction):
     with Workflow() as wf:
         workflow = model_type_to_workflow[model_type](params.model, params.clip_skip, loras, params.vae)
-        image_inputs = [LoadImage(filename)[0] for filename in [params.filename, params.filename2]]
+        image_inputs = [LoadImage(filename)[0] for filename in [params.filename, params.filename2] if filename is not None]
         workflow.create_latents(params.dimensions, params.batch_size)
         workflow.condition_prompts(params.prompt, params.negative_prompt)
         workflow.unclip_encode(image_inputs)

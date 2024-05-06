@@ -144,7 +144,7 @@ class ImageGenCommands:
             cfg_scale: Range[float, 1.0, MAX_CFG] = None,
             seed: int = None,
             input_file: Attachment = None,
-            input_file2: Attachment = None,
+            mashup_image: Attachment = None,
             denoise_strength: Range[float, 0.01, 1.0] = None,
             inpainting_prompt: str = None,
             inpainting_detection_threshold: Range[int, 0, 255] = None,
@@ -156,18 +156,14 @@ class ImageGenCommands:
                 if fp is None:
                     return
 
-            if input_file2 is not None:
-                fp2 = await process_attachment(input_file2, interaction)
+            if mashup_image is not None:
+                fp2 = await process_attachment(mashup_image, interaction)
                 if fp2 is None:
                     return
 
             params = ImageWorkflow(
                 ModelType.CASCADE,
-                (
-                    WorkflowType.txt2img
-                    if input_file is None
-                    else WorkflowType.image_mashup if input_file is not None and input_file2 is not None else WorkflowType.img2img
-                ),
+                WorkflowType.txt2img if input_file is None else WorkflowType.img2img,
                 prompt,
                 negative_prompt,
                 CASCADE_GENERATION_DEFAULTS.model,
@@ -181,7 +177,7 @@ class ImageGenCommands:
                 batch_size=CASCADE_GENERATION_DEFAULTS.batch_size,
                 seed=seed,
                 filename=fp if input_file is not None else None,
-                filename2=fp2 if input_file2 is not None else None,
+                filename2=fp2 if mashup_image is not None else None,
                 inpainting_prompt=inpainting_prompt,
                 inpainting_detection_threshold=inpainting_detection_threshold or CASCADE_GENERATION_DEFAULTS.inpainting_detection_threshold,
                 clip_skip=clip_skip or CASCADE_GENERATION_DEFAULTS.clip_skip,
@@ -221,6 +217,9 @@ class ImageGenCommands:
 
             if params.seed is None:
                 params.seed = random.randint(0, 999999999999999)
+
+            if params.filename2 is not None:
+                params.workflow_type = WorkflowType.image_mashup
 
             from src.comfy_workflows import do_workflow
 
@@ -275,6 +274,7 @@ class SDXLCommand(ImageGenCommands):
             cfg_scale: Range[float, 1.0, MAX_CFG] = None,
             seed: int = None,
             input_file: Attachment = None,
+            mashup_image: Attachment = None,
             denoise_strength: Range[float, 0.01, 1.0] = None,
             inpainting_prompt: str = None,
             inpainting_detection_threshold: Range[int, 0, 255] = None,
@@ -287,6 +287,11 @@ class SDXLCommand(ImageGenCommands):
             if input_file is not None:
                 fp = await process_attachment(input_file, interaction)
                 if fp is None:
+                    return
+
+            if mashup_image is not None:
+                fp2 = await process_attachment(mashup_image, interaction)
+                if fp2 is None:
                     return
 
             defaults = COMMAND_DEFAULTS[self.command_name]
@@ -307,6 +312,7 @@ class SDXLCommand(ImageGenCommands):
                 seed=seed,
                 slash_command=self.command_name,
                 filename=fp if input_file is not None else None,
+                filename2=fp2 if mashup_image is not None else None,
                 denoise_strength=denoise_strength or defaults.denoise_strength if input_file is not None else 1.0,
                 inpainting_prompt=inpainting_prompt,
                 inpainting_detection_threshold=inpainting_detection_threshold or defaults.inpainting_detection_threshold,

@@ -1,4 +1,4 @@
-# ComfyPipe
+# CarbBot
 
 <p float="left" align="center">
   <img src="assets/screen1.png" height="300px" align="top" />
@@ -6,7 +6,7 @@
   <img src="assets/screen3.png" height="300px" align="top" />
 </p>
 
-**ComfyPipe** makes your weirdest fantasies come true~~
+**CarbBot** makes your weirdest fantasies come true~~
 
 ## Features
 
@@ -94,7 +94,7 @@ pip install -r requirements.txt
 Copy or rename the config.properties.example file to config.properties and set your Discord bot token in [BOT] -> TOKEN. Ensure the [LOCAL] -> SERVER_ADDRESS is set to an address that
 includes `http://` or `https://`.
 
-ComfyPipe should detect models and loras in your models directory. To make sure the models show up in the correct commands, make sure your models are put in the following structure:
+CarbBot should detect models and loras in your models directory. To make sure the models show up in the correct commands, make sure your models are put in the following structure:
 
 ```
 - ComfyUIRoot

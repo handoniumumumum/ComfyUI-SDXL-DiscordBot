@@ -193,7 +193,7 @@ async def do_workflow(params: ImageWorkflow, interaction: discord.Interaction):
             if params.use_llm is True:
                 enhanced_prompt = process_prompt_with_llm(params.prompt, params.seed, params.llm_profile)
                 prompt_result = await IFDisplayText(enhanced_prompt)
-                params.prompt = prompt_result._output["string"][0]
+                params.prompt = params.prompt + ", BREAK \n" + prompt_result._output["string"][0]
 
             if params.style_prompt is not None and params.style_prompt not in params.prompt:
                 params.prompt = params.style_prompt + "\n" + params.prompt

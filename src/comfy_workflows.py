@@ -24,7 +24,7 @@ async def _do_txt2img(params: ImageWorkflow, model_type: ModelType, loras: list[
         workflow = model_type_to_workflow[model_type](params.model, params.clip_skip, loras, params.vae)
         workflow.create_latents(params.dimensions, params.batch_size)
         workflow.condition_prompts(params.prompt, params.negative_prompt)
-        workflow.sample(params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler or "normal")
+        workflow.sample(params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler or "normal", use_ays=params.use_align_your_steps)
         images = workflow.decode_and_save("final_output")
     wf.task.add_preview_callback(lambda task, node_id, image: do_preview(task, node_id, image, interaction))
     results = await images
@@ -41,7 +41,7 @@ async def _do_img2img(params: ImageWorkflow, model_type: ModelType, loras: list[
         if params.inpainting_prompt:
             workflow.mask_for_inpainting(image_input, params.inpainting_prompt, params.inpainting_detection_threshold)
         workflow.condition_prompts(params.prompt, params.negative_prompt)
-        workflow.sample(params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler or "normal", params.denoise_strength)
+        workflow.sample(params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler or "normal", params.denoise_strength, use_ays=params.use_align_your_steps)
         images = workflow.decode_and_save("final_output")
     wf.task.add_preview_callback(lambda task, node_id, image: do_preview(task, node_id, image, interaction))
     results = await images
@@ -66,7 +66,7 @@ async def _do_add_detail(params: ImageWorkflow, model_type: ModelType, loras: li
         workflow.create_img2img_latents(image_input, params.batch_size)
         workflow.condition_prompts(params.prompt, params.negative_prompt)
         workflow.condition_for_detailing(params.detailing_controlnet, image_input)
-        workflow.sample(params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler or "normal", params.denoise_strength)
+        workflow.sample(params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler or "normal", params.denoise_strength, use_ays=False)
         images = workflow.decode_and_save("final_output")
     wf.task.add_preview_callback(lambda task, node_id, image: do_preview(task, node_id, image, interaction))
     results = await images
@@ -82,7 +82,7 @@ async def _do_image_mashup(params: ImageWorkflow, model_type: ModelType, loras: 
         workflow.create_latents(params.dimensions, params.batch_size)
         workflow.condition_prompts(params.prompt, params.negative_prompt)
         workflow.unclip_encode(image_inputs)
-        workflow.sample(params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler or "normal")
+        workflow.sample(params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler or "normal", use_ays=params.use_align_your_steps)
         images = workflow.decode_and_save("final_output")
     wf.task.add_preview_callback(lambda task, node_id, image: do_preview(task, node_id, image, interaction))
     results = await images
@@ -187,8 +187,10 @@ async def do_workflow(params: ImageWorkflow, interaction: discord.Interaction):
 
             if params.use_accelerator_lora and params.num_steps < 10:
                 loras.append(Lora(params.accelerator_lora_name, 1.0))
-            elif params.cfg_scale < 1.5:
-                params.cfg_scale = 5.0
+            else:
+                params.use_align_your_steps = True
+                if params.cfg_scale < 1.2:
+                    params.cfg_scale = 4.0
 
             if params.use_llm is True:
                 enhanced_prompt = process_prompt_with_llm(params.prompt, params.seed, params.llm_profile)

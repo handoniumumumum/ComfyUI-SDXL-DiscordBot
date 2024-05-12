@@ -77,8 +77,15 @@ class SDWorkflow:
             encoded_clip_vision = CLIPVisionEncode(self.clip_vision, input)
             self.conditioning = UnCLIPConditioning(self.conditioning, encoded_clip_vision)
 
-    def sample(self, seed: int, num_samples: int, cfg_scale: float, sampler_name: str, scheduler: str, denoise_strength: float = 1):
-        self.output_latents = KSampler(self.model, seed, num_samples, cfg_scale, sampler_name, scheduler, self.conditioning, self.negative_conditioning, self.latents[0], denoise_strength)
+    def sample(self, seed: int, num_samples: int, cfg_scale: float, sampler_name: str, scheduler: str, denoise_strength: float = 1, use_ays: bool = False):
+        if use_ays:
+            num_samples = max(10, num_samples)
+            sampler = KSamplerSelect(KSamplerSelect.sampler_name.dpmpp_2m_sde)
+            model_type = AlignYourStepsScheduler.model_type.SDXL if isinstance(self, SDXLWorkflow) else AlignYourStepsScheduler.model_type.SD1
+            sigmas = AlignYourStepsScheduler(model_type, num_samples)
+            self.output_latents, _ = SamplerCustom(self.model, True, seed, cfg_scale, self.conditioning, self.negative_conditioning, sampler, sigmas, self.latents[0])
+        else:
+            self.output_latents = KSampler(self.model, seed, num_samples, cfg_scale, sampler_name, scheduler, self.conditioning, self.negative_conditioning, self.latents[0], denoise_strength)
 
     def decode(self):
         return VAEDecode(self.output_latents, self.vae)
@@ -143,7 +150,7 @@ class SDCascadeWorkflow(SDWorkflow):
         self.stage_c_conditioning = self.conditioning
         self.negative_conditioning = CLIPTextEncode(negative_prompt or "", self.clip)
 
-    def sample(self, seed: int, num_samples: int, cfg_scale: float, sampler_name: str, scheduler: str, denoise_strength: float = 1):
+    def sample(self, seed: int, num_samples: int, cfg_scale: float, sampler_name: str, scheduler: str, denoise_strength: float = 1, use_ays: bool = False):
         stage_c = KSampler(self.model, seed, num_samples, cfg_scale, sampler_name, scheduler, self.conditioning, self.negative_conditioning, self.latents[0], denoise_strength)
         self.stage_b_conditioning = StableCascadeStageBConditioning(self.stage_c_conditioning, self.latents[0])
         conditioning2 = StableCascadeStageBConditioning(self.stage_c_conditioning, stage_c)

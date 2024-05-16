@@ -22,7 +22,7 @@ class EditableButton:
         await task
 
     async def _edit_image(self, interaction, button):
-        edit_view = EditResponse(self.params, self.command)
+        edit_view = EditResponse(self.params, self.command, self.images)
         await edit_view.show_edit_message(interaction)
 
 
@@ -312,10 +312,11 @@ class AddDetailButtons(discord.ui.View, DeletableButton, InfoableButton):
 
 
 class EditResponse(discord.ui.View):
-    def __init__(self, params: ImageWorkflow, command: str):
+    def __init__(self, params: ImageWorkflow, command: str, images):
         super().__init__(timeout=None)
         self.params = params
         self.command = command
+        self.images = images
 
     @discord.ui.button(label="Prompts", style=discord.ButtonStyle.blurple, emoji="📝", row=0)
     async def edit_prompts(self, interaction, button):
@@ -487,6 +488,74 @@ class EditResponse(discord.ui.View):
 
         sampler_modal = EditSamplerModal(self.params, self.command, self)
         await interaction.response.send_modal(sampler_modal)
+
+    @discord.ui.button(label="Inpainting", style=discord.ButtonStyle.blurple, emoji="🖌️", row=0)
+    async def inpainting_tools(self, interaction, button):
+        class EditInpaintingModal(discord.ui.Modal, title="Edit Inpainting"):
+            def __init__(self, params: ImageWorkflow, images, owner: EditResponse):
+                super().__init__(timeout=None)
+                self.params = params
+                self.images = images
+                self.owner = owner
+
+                self.prompt = discord.ui.TextInput(
+                    label="Prompt",
+                    placeholder="Enter a prompt",
+                    required=True,
+                    default=self.params.prompt,
+                    style=discord.TextStyle.paragraph
+                )
+
+                self.inpainting_prompt = discord.ui.TextInput(
+                    label="Inpainting Prompt",
+                    placeholder="Enter inpainting prompt",
+                    required=True,
+                    default=self.params.inpainting_prompt or ""
+                )
+
+                self.inpainting_threshold = discord.ui.TextInput(
+                    label="Inpainting Detection Threshold",
+                    placeholder="Enter inpainting detection threshold",
+                    required=True,
+                    default=str(self.params.inpainting_detection_threshold)
+                )
+
+                self.selection = discord.ui.TextInput(
+                    label="Batch Selection",
+                    placeholder="Enter batch selection",
+                    required=True,
+                    default=str(1)
+                )
+
+                self.denoising_strength = discord.ui.TextInput(
+                    label="Denoising Strength",
+                    placeholder="Enter denoising strength",
+                    required=False,
+                    default=str(0.3)
+                )
+
+                self.add_item(self.prompt)
+                self.add_item(self.inpainting_prompt)
+                self.add_item(self.inpainting_threshold)
+                self.add_item(self.selection)
+                self.add_item(self.denoising_strength)
+
+            async def on_submit(self, interaction):
+                params = deepcopy(self.params)
+                params.prompt = self.prompt.value
+                params.inpainting_prompt = self.inpainting_prompt.value
+                params.inpainting_detection_threshold = float(self.inpainting_threshold.value)
+                params.denoise_strength = self.denoising_strength.value
+                selection = int(self.selection.value) - 1
+                params.filename = os.path.join(os.getcwd(), f"out/images_{get_filename(interaction, self.params)}_{selection}.png")
+                self.images[selection].save(fp=params.filename)
+                params.workflow_type = WorkflowType.img2img
+
+                await self.owner.generate_with_new_params(interaction, params)
+
+        inpainting_modal = EditInpaintingModal(self.params, self.images, self)
+        await interaction.response.send_modal(inpainting_modal)
+
 
     async def generate_with_new_params(self, interaction, params):
         await interaction.response.send_message(f"Generating image with new parameters, this shouldn't take too long...")

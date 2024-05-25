@@ -11,7 +11,7 @@ from discord import SelectOption
 from src.comfy_workflows import do_workflow
 from src.defaults import *
 from src.image_gen.collage_utils import create_collage, create_gif_collage
-from src.util import get_filename, build_command
+from src.util import get_filename, build_command, get_workflow
 
 
 # <editor-fold desc="ButtonDecorators">
@@ -233,8 +233,9 @@ class Buttons(discord.ui.View, EditableButton, RerollableButton, DeletableButton
             return
 
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        pnginfo = get_workflow(upscaled_image)
         upscaled_image_path = f"./out/upscaledImage_{timestamp}.png"
-        upscaled_image.save(upscaled_image_path)
+        upscaled_image.save(upscaled_image_path, pnginfo=pnginfo)
         final_message = f"{interaction.user.mention} here is your upscaled image"
         buttons = AddDetailButtons(params, upscaled_image, author=interaction.user)
         fp = f"{get_filename(interaction, self.params)}_{index}.png"
@@ -247,8 +248,9 @@ class Buttons(discord.ui.View, EditableButton, RerollableButton, DeletableButton
     async def _download_image(self, interaction, button):
         index = int(button.label[1:]) - 1
         file_name = f"{get_filename(interaction, self.params)}_{index}.png"
+        pnginfo = get_workflow(self.images[index])
         fp = f"./out/images_{file_name}"
-        self.images[index].save(fp)
+        self.images[index].save(fp, pnginfo=pnginfo)
         await interaction.response.send_message(f"{interaction.user.mention}, here is your image!", file=discord.File(fp=fp, filename=file_name))
 
 

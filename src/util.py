@@ -126,3 +126,13 @@ def get_loras_from_prompt(prompt: str):
     import re
     loras = re.findall(r"<lora:(.*?):(.*?)>", prompt)
     return [[lora[0], float(lora[1])] for lora in loras]
+
+def get_workflow(image):
+    info = image.info
+    pnginfo = {}
+    if info is not None:
+        from PIL.PngImagePlugin import PngInfo
+        pnginfo = PngInfo()
+        for key, value in info.items():
+            pnginfo.add_text(key, value)
+    return pnginfo

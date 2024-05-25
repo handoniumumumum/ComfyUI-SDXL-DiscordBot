@@ -3,6 +3,8 @@ from math import ceil, sqrt
 
 from PIL import Image
 
+from src.util import get_workflow
+
 
 def create_gif_collage(images):
     timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
@@ -34,9 +36,10 @@ def create_collage(images):
         y_offset = row * image.height
         collage.paste(image, (x_offset, y_offset))
 
+    pnginfo = get_workflow(images[0])
+
     timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
     collage_path = f"./out/images_{timestamp}.png"
-    collage.save(collage_path)
+    collage.save(collage_path, pnginfo=pnginfo)
 
     return collage_path
-

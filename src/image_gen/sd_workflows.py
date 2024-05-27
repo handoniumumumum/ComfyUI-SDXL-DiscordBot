@@ -101,7 +101,7 @@ class SD15Workflow(SDWorkflow):
 
 class SDXLWorkflow(SDWorkflow):
     def condition_prompts(self, positive_prompt: str, negative_prompt: str):
-        self.conditioning = CLIPTextEncodeSDXL(4096, 4096, 4096, 4096, 4096, 4096, positive_prompt, self.clip, positive_prompt)
+        self.conditioning = CLIPTextEncodeSDXL(4096, 4096, 0, 0, 4096, 4096, positive_prompt, self.clip, positive_prompt)
         self.negative_conditioning = CLIPTextEncode(negative_prompt, self.clip)
 
     def condition_for_detailing(self, controlnet_name, image):
@@ -116,7 +116,7 @@ class SDXLWorkflow(SDWorkflow):
 
 class PonyWorkflow(SDXLWorkflow):
     def condition_prompts(self, positive_prompt: str, negative_prompt: str):
-        self.conditioning = CLIPTextEncodeSDXL(1024, 1024, 1024, 1024, 1024, 1024, positive_prompt, self.clip, positive_prompt)
+        self.conditioning = CLIPTextEncodeSDXL(1024, 1024, 0, 0, 1024, 1024, positive_prompt, self.clip, positive_prompt)
         self.negative_conditioning = CLIPTextEncode(negative_prompt, self.clip)
 
 class SDCascadeWorkflow(SDWorkflow):

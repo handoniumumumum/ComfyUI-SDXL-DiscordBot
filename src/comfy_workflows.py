@@ -11,7 +11,7 @@ from src.image_gen.ImageWorkflow import *
 from src.image_gen.sd_workflows import *
 from src.util import get_loras_from_prompt
 
-model_type_to_workflow = {ModelType.SD15: SD15Workflow, ModelType.SDXL: SDXLWorkflow, ModelType.CASCADE: SDCascadeWorkflow, ModelType.PONY: PonyWorkflow}
+model_type_to_workflow = {ModelType.SD15: SD15Workflow, ModelType.SDXL: SDXLWorkflow, ModelType.CASCADE: SDCascadeWorkflow, ModelType.PONY: PonyWorkflow, ModelType.SD3: SD3Workflow}
 
 config = configparser.ConfigParser()
 config.read("config.properties")

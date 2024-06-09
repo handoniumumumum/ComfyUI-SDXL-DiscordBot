@@ -345,3 +345,10 @@ class PonyXLCommand(SDXLCommand):
         self.command_descs = PONY_ARG_DESCS
         self.command_choices = PONY_ARG_CHOICES
         self.model_type = ModelType.PONY
+
+class SD3Command(SDXLCommand):
+    def __init__(self, tree: discord.app_commands.CommandTree, command_name: str):
+        super().__init__(tree, "sd3")
+        self.command_descs = SD3_ARG_DESCS
+        self.command_choices = SD3_ARG_CHOICES
+        self.model_type = ModelType.SD3

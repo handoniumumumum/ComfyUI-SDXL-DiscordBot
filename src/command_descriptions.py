@@ -50,6 +50,8 @@ SDXL_LORA_CHOICES = [Choice(name=l.replace(".safetensors", ""), value=l) for l i
 PONY_MODEL_CHOICES = [Choice(name=m.replace(".safetensors", ""), value=m) for m in models if not should_filter_model(m, "pony")]
 PONY_LORA_CHOICES = [Choice(name=l.replace(".safetensors", ""), value=l) for l in loras if not should_filter_model(l, "pony")]
 CASCADE_LORA_CHOICES = [Choice(name=l.replace(".safetensors", ""), value=l) for l in loras if not should_filter_model(l, "cascade")]
+SD3_MODEL_CHOICES = [Choice(name=m.replace(".safetensors", ""), value=m) for m in models if not should_filter_model(m, "sd3")]
+SD3_LORA_CHOICES = [Choice(name=l.replace(".safetensors", ""), value=l) for l in loras if not should_filter_model(l, "sd3")]
 SAMPLER_CHOICES = [Choice(name=s, value=s) for s in samplers if "adaptive" not in s.lower()]
 SCHEDULER_CHOICES = [Choice(name=s, value=s) for s in schedulers]
 
@@ -128,6 +130,10 @@ PONY_ARG_DESCS = {
     **SDXL_ARG_DESCS
 }
 
+SD3_ARG_DESCS = {
+    **BASE_ARG_DESCS,
+}
+
 BASE_ARG_CHOICES = {
     "aspect_ratio": ASPECT_RATIO_CHOICES,
     "sampler": SAMPLER_CHOICES,
@@ -149,6 +155,12 @@ CASCADE_ARG_CHOICES = {
     "aspect_ratio": ASPECT_RATIO_CHOICES,
     "lora": CASCADE_LORA_CHOICES[:25],
     "lora2": CASCADE_LORA_CHOICES[:25],
+}
+SD3_ARG_CHOICES = {
+    "model": SD3_MODEL_CHOICES[:25],
+    "lora": SD3_LORA_CHOICES[:25],
+    "lora2": SD3_LORA_CHOICES[:25],
+    **BASE_ARG_CHOICES,
 }
 VIDEO_ARG_CHOICES = {k: v for k, v in IMAGINE_ARG_CHOICES.items() if k not in {"lora2", "lora3", "aspect_ratio"}}
 

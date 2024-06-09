@@ -32,6 +32,10 @@ async def on_ready():
     if len(PONY_ARG_CHOICES["model"]) != 0:
         from src.image_gen.commands.ImageGenCommands import PonyXLCommand
         commands.append(PonyXLCommand(tree, "pony"))
+    from src.command_descriptions import SD3_ARG_CHOICES
+    if len(SD3_ARG_CHOICES["model"]) != 0:
+        from src.image_gen.commands.ImageGenCommands import SD3Command
+        commands.append(SD3Command(tree, "sd3"))
     from src.generic_commands import HelpCommands, InfoCommands
     commands.append(HelpCommands(tree))
     commands.append(InfoCommands(tree))

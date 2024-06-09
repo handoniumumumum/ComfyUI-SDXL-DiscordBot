@@ -132,6 +132,29 @@ PONY_GENERATION_DEFAULTS = ImageWorkflow(
     llm_profile=config["PONY_GENERATION_DEFAULTS"]["LLM_PROFILE"],
 )
 
+SD3_GENERATION_DEFAULTS = ImageWorkflow(
+    ModelType.SD3,  # model_type
+    None,  # workflow type
+    None,  # prompt
+    None,  # negative_prompt
+    config["SD3_GENERATION_DEFAULTS"]["MODEL"],
+    None,  # loras
+    None,  # lora_strengths
+    config["SD3_GENERATION_DEFAULTS"]["ASPECT_RATIO"],  # aspect_ratio
+    config["SD3_GENERATION_DEFAULTS"]["SAMPLER"],
+    int(config["SD3_GENERATION_DEFAULTS"]["NUM_STEPS"]),
+    float(config["SD3_GENERATION_DEFAULTS"]["CFG_SCALE"]),
+    float(config["SD3_GENERATION_DEFAULTS"]["DENOISE_STRENGTH"]),
+    int(config["SD3_GENERATION_DEFAULTS"]["BATCH_SIZE"]),  # batch_size
+    None,  # seed
+    None,  # filename
+    "sd3",  # slash_command
+    None,  # inpainting_prompt
+    int(config["SD3_GENERATION_DEFAULTS"]["INPAINTING_DETECTION_THRESHOLD"]),  # inpainting_detection_threshold
+    int(config["SD3_GENERATION_DEFAULTS"]["CLIP_SKIP"]),
+    llm_profile=config["SD3_GENERATION_DEFAULTS"]["LLM_PROFILE"],
+)
+
 ADD_DETAIL_DEFAULTS = ImageWorkflow(
     None,
     WorkflowType.add_detail,

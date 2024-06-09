@@ -157,6 +157,8 @@ class SDCascadeWorkflow(SDWorkflow):
         zeroed_out = ConditioningZeroOut(self.stage_c_conditioning)
         self.output_latents = KSampler(self.stage_b_model, seed, 10, 1.1, sampler_name, scheduler, conditioning2, zeroed_out, self.latents[1], 1)
 
+class SD3Workflow(SDWorkflow):
+    pass
 
 class UpscaleWorkflow:
     def load_image(self, file_path: str):

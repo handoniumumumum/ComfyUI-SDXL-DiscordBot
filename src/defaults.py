@@ -180,6 +180,7 @@ COMMAND_DEFAULTS = {
     "video": VIDEO_GENERATION_DEFAULTS,
     "add_detail": ADD_DETAIL_DEFAULTS,
     "upscale": UPSCALE_DEFAULTS,
+    "sd3": SD3_GENERATION_DEFAULTS
 }
 
 MAX_RETRIES = int(config["BOT"]["MAX_RETRIES"] or 3)

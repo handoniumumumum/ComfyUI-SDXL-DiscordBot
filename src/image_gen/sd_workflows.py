@@ -160,7 +160,7 @@ class SDCascadeWorkflow(SDWorkflow):
 class SD3Workflow(SDWorkflow):
     def _load_model(self, model_name: str, clip_skip: int, loras: Optional[list[Lora]] = None, vae_name: Optional[str] = None):
         model, _, vae = CheckpointLoaderSimple(model_name)
-        clip = TripleCLIPLoader("clip_g.safetensors", "clip_l.safetensors", "t5xxl_fp16.safetensors")
+        clip = TripleCLIPLoader(CLIPs.clip_l, CLIPs.clip_g, CLIPs.t5xxl_fp16)
         if vae_name is not None:
             vae = VAELoader(vae_name)
         if loras:
@@ -168,18 +168,22 @@ class SD3Workflow(SDWorkflow):
                 if lora.name == None or lora.name == "None":
                     continue
                 model, clip = LoraLoader(model, clip, lora.name, lora.strength, lora.strength)
-        clip = CLIPSetLastLayer(clip, clip_skip)
         self.model = model
         self.clip = clip
         self.vae = vae
         self.clip_vision = None
 
+    def create_latents(self, dimensions: tuple[int, int], batches: int):
+        width, height = dimensions
+        latent = EmptySD3LatentImage(width, height, batches)
+        self.latents = [latent]
+
     def condition_prompts(self, positive_prompt: str, negative_prompt: str):
         self.conditioning = CLIPTextEncode(positive_prompt, self.clip)
         self.negative_conditioning = CLIPTextEncode(negative_prompt or "", self.clip)
-        self.negative_conditioning = ConditioningZeroOut(self.negative_conditioning)
-        negative_conditioning1 = ConditioningSetTimestepRange(0.1, 1)
-        negative_conditioning2 = ConditioningSetTimestepRange(0, 0.1)
+        zero_out_negative_conditioning = ConditioningZeroOut(self.negative_conditioning)
+        negative_conditioning1 = ConditioningSetTimestepRange(zero_out_negative_conditioning, 0.1, 1)
+        negative_conditioning2 = ConditioningSetTimestepRange(self.negative_conditioning, 0, 0.1)
         self.negative_conditioning = ConditioningCombine(negative_conditioning1, negative_conditioning2)
 
     def sample(self, seed: int, num_samples: int, cfg_scale: float, sampler_name: str, scheduler: str, denoise_strength: float = 1, use_ays: bool = False):

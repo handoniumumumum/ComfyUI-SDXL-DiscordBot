@@ -57,6 +57,7 @@ SDXL_GENERATION_DEFAULTS = ImageWorkflow(
     negative_style_prompt=config["SDXL_GENERATION_DEFAULTS"]["DEFAULT_NEGATIVE_STYLE_PROMPT"],
     detailing_controlnet=config["SDXL_GENERATION_DEFAULTS"]["DETAILING_CONTROLNET"],
     llm_profile=config["SDXL_GENERATION_DEFAULTS"]["LLM_PROFILE"],
+    use_align_your_steps=config["SDXL_GENERATION_DEFAULTS"]["USE_ALIGN_YOUR_STEPS"],
 )
 
 CASCADE_GENERATION_DEFAULTS = ImageWorkflow(
@@ -130,6 +131,7 @@ PONY_GENERATION_DEFAULTS = ImageWorkflow(
     vae=config["PONY_GENERATION_DEFAULTS"]["VAE"],
     detailing_controlnet=config["PONY_GENERATION_DEFAULTS"]["DETAILING_CONTROLNET"],
     llm_profile=config["PONY_GENERATION_DEFAULTS"]["LLM_PROFILE"],
+    use_align_your_steps=config["PONY_GENERATION_DEFAULTS"]["USE_ALIGN_YOUR_STEPS"],
 )
 
 SD3_GENERATION_DEFAULTS = ImageWorkflow(
@@ -153,6 +155,8 @@ SD3_GENERATION_DEFAULTS = ImageWorkflow(
     int(config["SD3_GENERATION_DEFAULTS"]["INPAINTING_DETECTION_THRESHOLD"]),  # inpainting_detection_threshold
     int(config["SD3_GENERATION_DEFAULTS"]["CLIP_SKIP"]),
     llm_profile=config["SD3_GENERATION_DEFAULTS"]["LLM_PROFILE"],
+    use_align_your_steps=config["SD3_GENERATION_DEFAULTS"]["USE_ALIGN_YOUR_STEPS"],
+    scheduler=config["SD3_GENERATION_DEFAULTS"]["SCHEDULER"],
 )
 
 ADD_DETAIL_DEFAULTS = ImageWorkflow(

@@ -328,6 +328,7 @@ class SDXLCommand(ImageGenCommands):
                 negative_style_prompt=negative_style_prompt or defaults.negative_style_prompt,
                 detailing_controlnet=defaults.detailing_controlnet,
                 use_llm=use_llm or (bool(config["LLM"]["use_llm"]) and self.command_name == "imagine"),
+                use_align_your_steps=bool(defaults.use_align_your_steps),
             )
 
             await self._do_request(

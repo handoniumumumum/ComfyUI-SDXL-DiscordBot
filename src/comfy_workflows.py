@@ -187,6 +187,7 @@ async def do_workflow(params: ImageWorkflow, interaction: discord.Interaction):
 
             if params.use_accelerator_lora and params.num_steps < 10:
                 loras.append(Lora(params.accelerator_lora_name, 1.0))
+                params.use_align_your_steps = False
             else:
                 params.use_align_your_steps = True if params.model_type != ModelType.SD3 else False
                 if params.cfg_scale < 1.2:

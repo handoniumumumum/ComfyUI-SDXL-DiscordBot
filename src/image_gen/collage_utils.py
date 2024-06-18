@@ -14,7 +14,7 @@ def create_gif_collage(images):
     return collage_path
 
 
-def create_collage(images):
+def create_collage(images, image_workflow = None):
     if images is None or len(images) == 0:
         print("Error: No images to make collage")
         return None
@@ -36,7 +36,7 @@ def create_collage(images):
         y_offset = row * image.height
         collage.paste(image, (x_offset, y_offset))
 
-    pnginfo = get_workflow(images[0])
+    pnginfo = get_workflow(images[0], image_workflow)
 
     timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
     collage_path = f"./out/images_{timestamp}.png"

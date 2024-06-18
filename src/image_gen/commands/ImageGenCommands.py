@@ -240,7 +240,7 @@ class ImageGenCommands:
             file_name = get_filename(interaction, params)
 
             fname = f"{file_name}.gif" if "GIF" in images[0].format else f"{file_name}.png"
-            await interaction.channel.send(content=final_message, file=discord.File(fp=create_collage(images), filename=fname), view=buttons)
+            await interaction.channel.send(content=final_message, file=discord.File(fp=create_collage(images, params), filename=fname), view=buttons)
         except Exception as e:
             logger.exception("Error generating image: %s for command %s with params %s", e, command_name, params)
             await interaction.channel.send(f"{interaction.user.mention} `Error generating image: {e} for command {command_name}`")

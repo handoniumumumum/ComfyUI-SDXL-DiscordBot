@@ -47,7 +47,7 @@ class RerollableButton:
             collage = create_gif_collage(images)
             fname = "collage.gif"
         else:
-            collage = create_collage(images)
+            collage = create_collage(images, params)
             fname = "collage.png"
 
         final_message = f'{interaction.user.mention} asked me to re-imagine "{params.prompt}", here is what I imagined for them. ' f"Seed: {params.seed}"
@@ -205,7 +205,7 @@ class Buttons(discord.ui.View, EditableButton, RerollableButton, DeletableButton
         params.filename = os.path.join(os.getcwd(), f"out/images_{get_filename(interaction, self.params)}_{index}.png")
         self.images[index].save(fp=params.filename)
         images = await do_workflow(params, interaction)
-        collage_path = create_collage(images)
+        collage_path = create_collage(images, params)
         final_message = f"{interaction.user.mention} here are your alternative images"
 
         buttons = Buttons(params, images, interaction.user, command=self.command)
@@ -233,7 +233,7 @@ class Buttons(discord.ui.View, EditableButton, RerollableButton, DeletableButton
             return
 
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-        pnginfo = get_workflow(upscaled_image)
+        pnginfo = get_workflow(upscaled_image, params)
         upscaled_image_path = f"./out/upscaledImage_{timestamp}.png"
         upscaled_image.save(upscaled_image_path, pnginfo=pnginfo)
         final_message = f"{interaction.user.mention} here is your upscaled image"
@@ -248,7 +248,7 @@ class Buttons(discord.ui.View, EditableButton, RerollableButton, DeletableButton
     async def _download_image(self, interaction, button):
         index = int(button.label[1:]) - 1
         file_name = f"{get_filename(interaction, self.params)}_{index}.png"
-        pnginfo = get_workflow(self.images[index])
+        pnginfo = get_workflow(self.images[index], self.params)
         fp = f"./out/images_{file_name}"
         self.images[index].save(fp, pnginfo=pnginfo)
         await interaction.response.send_message(f"{interaction.user.mention}, here is your image!", file=discord.File(fp=fp, filename=file_name))
@@ -303,7 +303,7 @@ class AddDetailButtons(discord.ui.View, DeletableButton, InfoableButton):
         if images is None or (isinstance(images, list) and len(images) == 0):
             return
 
-        collage_path = create_collage(images)
+        collage_path = create_collage(images, params)
         final_message = f"{interaction.user.mention} here is your image with more detail"
 
         fp = f"{get_filename(interaction, params)}_detail.png"
@@ -568,7 +568,7 @@ class EditResponse(discord.ui.View):
             collage = create_gif_collage(images)
             fname = "collage.gif"
         else:
-            collage = create_collage(images)
+            collage = create_collage(images, params)
             fname = "collage.png"
         await interaction.channel.send(content=final_message, file=discord.File(fp=collage, filename=fname), view=buttons)
 

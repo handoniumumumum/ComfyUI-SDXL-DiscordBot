@@ -127,7 +127,7 @@ def get_loras_from_prompt(prompt: str):
     loras = re.findall(r"<lora:(.*?):(.*?)>", prompt)
     return [[lora[0], float(lora[1])] for lora in loras]
 
-def get_workflow(image):
+def get_workflow(image, image_workflow: ImageWorkflow = None):
     info = image.info
     pnginfo = {}
     if info is not None:
@@ -135,4 +135,6 @@ def get_workflow(image):
         pnginfo = PngInfo()
         for key, value in info.items():
             pnginfo.add_text(key, value)
+    if image_workflow is not None:
+        pnginfo.add_text("parameters", str(image_workflow))
     return pnginfo

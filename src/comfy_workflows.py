@@ -21,7 +21,7 @@ loop = None
 
 async def _do_txt2img(params: ImageWorkflow, model_type: ModelType, loras: list[Lora], interaction):
     with Workflow() as wf:
-        workflow = model_type_to_workflow[model_type](params.model, params.clip_skip, loras, params.vae)
+        workflow = model_type_to_workflow[model_type](params.model, params.clip_skip, loras, params.vae, params.use_tensorrt, params.tensorrt_model)
         workflow.create_latents(params.dimensions, params.batch_size)
         workflow.condition_prompts(params.prompt, params.negative_prompt)
         workflow.sample(params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler or "normal", use_ays=params.use_align_your_steps)
@@ -35,7 +35,7 @@ async def _do_txt2img(params: ImageWorkflow, model_type: ModelType, loras: list[
 
 async def _do_img2img(params: ImageWorkflow, model_type: ModelType, loras: list[Lora], interaction):
     with Workflow() as wf:
-        workflow = model_type_to_workflow[model_type](params.model, params.clip_skip, loras, params.vae)
+        workflow = model_type_to_workflow[model_type](params.model, params.clip_skip, loras, params.vae, params.use_tensorrt, params.tensorrt_model)
         image_input = LoadImage(params.filename)[0]
         workflow.create_img2img_latents(image_input, params.batch_size)
         if params.inpainting_prompt:
@@ -61,7 +61,7 @@ async def _do_upscale(params: ImageWorkflow, model_type: ModelType, loras: list[
 
 async def _do_add_detail(params: ImageWorkflow, model_type: ModelType, loras: list[Lora], interaction):
     with Workflow() as wf:
-        workflow = model_type_to_workflow[model_type](params.model, params.clip_skip, loras, params.vae)
+        workflow = model_type_to_workflow[model_type](params.model, params.clip_skip, loras, params.vae, params.use_tensorrt, params.tensorrt_model)
         image_input = LoadImage(params.filename)[0]
         workflow.create_img2img_latents(image_input, params.batch_size)
         workflow.condition_prompts(params.prompt, params.negative_prompt)
@@ -77,7 +77,7 @@ async def _do_add_detail(params: ImageWorkflow, model_type: ModelType, loras: li
 
 async def _do_image_mashup(params: ImageWorkflow, model_type: ModelType, loras: list[Lora], interaction):
     with Workflow() as wf:
-        workflow = model_type_to_workflow[model_type](params.model, params.clip_skip, loras, params.vae)
+        workflow = model_type_to_workflow[model_type](params.model, params.clip_skip, loras, params.vae, params.use_tensorrt, params.tensorrt_model)
         image_inputs = [LoadImage(filename)[0] for filename in [params.filename, params.filename2] if filename is not None]
         workflow.create_latents(params.dimensions, params.batch_size)
         workflow.condition_prompts(params.prompt, params.negative_prompt)

@@ -2,6 +2,7 @@ import dataclasses
 from typing import Optional
 
 from comfy_script.runtime import *
+from src.image_gen.ImageWorkflow import ModelType
 from src.util import get_server_address
 
 load(get_server_address())
@@ -16,11 +17,15 @@ class Lora:
 
 
 class SDWorkflow:
-    def __init__(self, model_name: str, clip_skip: int, loras: Optional[list[Lora]] = None, vae_name: Optional[str] = None):
-        self._load_model(model_name, clip_skip, loras)
+    def __init__(self, model_name: str, clip_skip: int, loras: Optional[list[Lora]] = None, vae_name: Optional[str] = None, use_tensorrt=False, tensorrt_model: str = None):
+        self._load_model(model_name, clip_skip, loras, vae_name, use_tensorrt, tensorrt_model)
 
-    def _load_model(self, model_name: str, clip_skip: int, loras: Optional[list[Lora]] = None, vae_name: Optional[str] = None):
-        model, clip, vae = CheckpointLoaderSimple(model_name)
+    def _load_model(self, model_name: str, clip_skip: int, loras: Optional[list[Lora]] = None, vae_name: Optional[str] = None, use_tensorrt: bool =False, tensorrt_model: str = None):
+        if use_tensorrt is False or tensorrt_model is None or tensorrt_model == "":
+            model, clip, vae = CheckpointLoaderSimple(model_name)
+        else:
+            _, _, vae = CheckpointLoaderSimple(model_name)
+            model = TensorRTLoader(tensorrt_model, TensorRTLoader.model_type.sd1_x if isinstance(self, SD15Workflow) else TensorRTLoader.model_type.sdxl_base)
         if vae_name is not None:
             vae = VAELoader(vae_name)
         if loras:
@@ -120,7 +125,7 @@ class PonyWorkflow(SDXLWorkflow):
         self.negative_conditioning = CLIPTextEncode(negative_prompt, self.clip)
 
 class SDCascadeWorkflow(SDWorkflow):
-    def _load_model(self, model_name: str, clip_skip: int, loras: Optional[list[Lora]] = None, vae_name: Optional[str] = None):
+    def _load_model(self, model_name: str, clip_skip: int, loras: Optional[list[Lora]] = None, vae_name: Optional[str] = None, use_tensorrt: bool = False, tensorrt_model: str = None):
         self.model, self.clip, self.stage_c_vae, self.clip_vision = UnCLIPCheckpointLoader(model_name)
         if loras:
             for lora in loras:
@@ -158,8 +163,12 @@ class SDCascadeWorkflow(SDWorkflow):
         self.output_latents = KSampler(self.stage_b_model, seed, 10, 1.1, sampler_name, scheduler, conditioning2, zeroed_out, self.latents[1], 1)
 
 class SD3Workflow(SDWorkflow):
-    def _load_model(self, model_name: str, clip_skip: int, loras: Optional[list[Lora]] = None, vae_name: Optional[str] = None):
-        model, _, vae = CheckpointLoaderSimple(model_name)
+    def _load_model(self, model_name: str, clip_skip: int, loras: Optional[list[Lora]] = None, vae_name: Optional[str] = None, use_tensorrt: bool = False, tensorrt_model: str = None):
+        if use_tensorrt is False or tensorrt_model is None or tensorrt_model == "":
+            model, _, vae = CheckpointLoaderSimple(model_name)
+        else:
+            _, _, vae = CheckpointLoaderSimple(model_name)
+            model = TensorRTLoader(tensorrt_model, TensorRTLoader.model_type.sd3)
         clip = TripleCLIPLoader(CLIPs.clip_l, CLIPs.clip_g, CLIPs.t5xxl_fp16)
         if vae_name is not None:
             vae = VAELoader(vae_name)

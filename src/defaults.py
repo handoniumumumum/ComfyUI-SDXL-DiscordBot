@@ -27,6 +27,8 @@ SD15_GENERATION_DEFAULTS = ImageWorkflow(
     int(config["SDXL_GENERATION_DEFAULTS"]["CLIP_SKIP"]),  # clip_skip
     scheduler=config["SD15_GENERATION_DEFAULTS"]["SCHEDULER"] if "SCHEDULER" in config["SD15_GENERATION_DEFAULTS"] else None,
     llm_profile=config["SD15_GENERATION_DEFAULTS"]["LLM_PROFILE"],
+    use_tensorrt=bool(config["SD15_GENERATION_DEFAULTS"]["USE_TENSORRT"]) or False,
+    tensorrt_model=config["SD15_GENERATION_DEFAULTS"]["TENSORRT_MODEL"],
 )
 
 SDXL_GENERATION_DEFAULTS = ImageWorkflow(
@@ -58,6 +60,8 @@ SDXL_GENERATION_DEFAULTS = ImageWorkflow(
     detailing_controlnet=config["SDXL_GENERATION_DEFAULTS"]["DETAILING_CONTROLNET"],
     llm_profile=config["SDXL_GENERATION_DEFAULTS"]["LLM_PROFILE"],
     use_align_your_steps=config["SDXL_GENERATION_DEFAULTS"]["USE_ALIGN_YOUR_STEPS"],
+    use_tensorrt=bool(config["SDXL_GENERATION_DEFAULTS"]["USE_TENSORRT"]),
+    tensorrt_model=config["SDXL_GENERATION_DEFAULTS"]["TENSORRT_MODEL"],
 )
 
 CASCADE_GENERATION_DEFAULTS = ImageWorkflow(
@@ -157,6 +161,8 @@ SD3_GENERATION_DEFAULTS = ImageWorkflow(
     llm_profile=config["SD3_GENERATION_DEFAULTS"]["LLM_PROFILE"],
     use_align_your_steps=config["SD3_GENERATION_DEFAULTS"]["USE_ALIGN_YOUR_STEPS"],
     scheduler=config["SD3_GENERATION_DEFAULTS"]["SCHEDULER"],
+    use_tensorrt=bool(config["SD3_GENERATION_DEFAULTS"]["USE_TENSORRT"]) or False,
+    tensorrt_model=config["SD3_GENERATION_DEFAULTS"]["TENSORRT_MODEL"],
 )
 
 ADD_DETAIL_DEFAULTS = ImageWorkflow(

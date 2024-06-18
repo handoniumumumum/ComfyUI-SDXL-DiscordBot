@@ -69,3 +69,5 @@ class ImageWorkflow:
     use_llm: Optional[bool] = None
     llm_profile: Optional[str] = None
     use_align_your_steps: Optional[bool] = None
+    use_tensorrt : Optional[bool] = None
+    tensorrt_model: Optional[str] = None

@@ -135,9 +135,9 @@ SD3_ARG_DESCS = {
 }
 
 BASE_ARG_CHOICES = {
-    "aspect_ratio": ASPECT_RATIO_CHOICES,
-    "sampler": SAMPLER_CHOICES,
-    "scheduler": SCHEDULER_CHOICES
+    "aspect_ratio": ASPECT_RATIO_CHOICES[:25],
+    "sampler": SAMPLER_CHOICES[:25],
+    "scheduler": SCHEDULER_CHOICES[:25]
 }
 IMAGINE_ARG_CHOICES = {
     "model": SD15_MODEL_CHOICES[:25],

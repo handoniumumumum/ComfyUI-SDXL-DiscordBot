@@ -200,6 +200,8 @@ class ImageGenCommands:
         command_name: str,
         params: ImageWorkflow,
     ):
+        await interaction.response.defer()
+
         try:
             if should_filter(params.prompt):
                 logger.info(
@@ -207,13 +209,13 @@ class ImageGenCommands:
                     params.prompt,
                     params.negative_prompt,
                 )
-                await interaction.response.send_message(
+                await interaction.followup.send(
                     f"The prompt {params.prompt} or negative prompt {params.negative_prompt} contains a blocked word, not generating image.",
                     ephemeral=True,
                 )
                 return
 
-            await interaction.response.send_message(intro_message)
+            await interaction.followup.send(intro_message)
 
             if params.seed is None:
                 params.seed = random.randint(0, 999999999999999)

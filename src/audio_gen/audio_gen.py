@@ -111,9 +111,9 @@ async def generate_tts(params: AudioWorkflow):
         raw_audio = TortoiseTTSGenerate(model, params.voice, params.prompt, 4, 8, 8, 0.3, 2, 4, 0.8, 300, 0.7000000000000001, 10, True, 2, 1, params.seed or random.randint(0, 2**32 - 1))
         raw_audio = ConvertAudio(raw_audio, sr, 44100, 1)
         image = SpectrogramImage(raw_audio, 1024, 256, 1024, 0.5, True, True)
-        image = ImageResize(image, ImageResize.mode.resize, 'true', ImageResize.resampling.bicubic, 2, 512, 128)
+        image = ImageResize(image, "resize", 'true', "bicubic", 2, 512, 128)
         image_preview = SaveImage(image, 'spectrogram')
-        video = CombineImageWithAudio(image, raw_audio, 44100, CombineImageWithAudio.file_format.webm, 'final_output')
+        video = CombineImageWithAudio(image, raw_audio, 44100, "webm", 'final_output')
     await image_preview
     results = await video
     return await get_data(results)

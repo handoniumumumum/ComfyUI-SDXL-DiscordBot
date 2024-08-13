@@ -9,6 +9,7 @@ class ModelType(Enum):
     VIDEO = "VIDEO",
     PONY = "PONY",
     SD3 = "SD3",
+    FLUX = "FLUX",
 
 class WorkflowType(Enum):
     txt2img = "txt2img",

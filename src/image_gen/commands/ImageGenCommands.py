@@ -357,3 +357,10 @@ class SD3Command(SDXLCommand):
         self.command_descs = SD3_ARG_DESCS
         self.command_choices = SD3_ARG_CHOICES
         self.model_type = ModelType.SD3
+
+class FluxCommand(SDXLCommand):
+    def __init__(self, tree: discord.app_commands.CommandTree, command_name: str):
+        super().__init__(tree, "flux")
+        self.command_descs = FLUX_ARG_DESCS
+        self.command_choices = FLUX_ARG_CHOICES
+        self.model_type = ModelType.FLUX

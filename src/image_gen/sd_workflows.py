@@ -199,6 +199,25 @@ class SD3Workflow(SDWorkflow):
         self.model = ModelSamplingSD3(self.model, 3)
         super().sample(seed, num_samples, cfg_scale, sampler_name, scheduler, denoise_strength, use_ays)
 
+class FluxWorkflow(SDWorkflow):
+    def _load_model(self, model_name: str, clip_skip: int, loras: Optional[list[Lora]] = None, vae_name: Optional[str] = None, use_tensorrt: bool =False, tensorrt_model: str = None):
+        model, _, _ = CheckpointLoaderNF4(model_name)
+        clip = DualCLIPLoader(CLIPs.t5xxl_fp16, CLIPs.clip_l, DualCLIPLoader.type.flux)
+        if vae_name is not None:
+            vae = VAELoader(vae_name)
+        else:
+            vae = VAELoader("ae.sft")
+        self.model = model
+        self.clip = clip
+        self.vae = vae
+
+    def sample(self, seed: int, num_samples: int, cfg_scale: float, sampler_name: str, scheduler: str, denoise_strength: float = 1, use_ays: bool = False):
+        noise = RandomNoise(seed)
+        guider = BasicGuider(self.model, self.conditioning)
+        sampler = KSamplerSelect(sampler_name)
+        sigmas = BasicScheduler(self.model, scheduler, num_samples, denoise_strength)
+        self.output_latents, _ = SamplerCustomAdvanced(noise, guider, sampler, sigmas, self.latents[0])
+
 
 class UpscaleWorkflow:
     def load_image(self, file_path: str):

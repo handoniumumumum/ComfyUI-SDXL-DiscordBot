@@ -52,6 +52,8 @@ PONY_LORA_CHOICES = [Choice(name=l.replace(".safetensors", ""), value=l) for l i
 CASCADE_LORA_CHOICES = [Choice(name=l.replace(".safetensors", ""), value=l) for l in loras if not should_filter_model(l, "cascade")]
 SD3_MODEL_CHOICES = [Choice(name=m.replace(".safetensors", ""), value=m) for m in models if not should_filter_model(m, "sd3")]
 SD3_LORA_CHOICES = [Choice(name=l.replace(".safetensors", ""), value=l) for l in loras if not should_filter_model(l, "sd3")]
+FLUX_MODEL_CHOICES = [Choice(name=m.replace(".safetensors", ""), value=m) for m in models if not should_filter_model(m, "flux")]
+FLUX_LORA_CHOICES = [Choice(name=l.replace(".safetensors", ""), value=l) for l in loras if not should_filter_model(l, "flux")]
 SAMPLER_CHOICES = [Choice(name=s, value=s) for s in samplers if "adaptive" not in s.lower()]
 SCHEDULER_CHOICES = [Choice(name=s, value=s) for s in schedulers]
 
@@ -134,6 +136,10 @@ SD3_ARG_DESCS = {
     **BASE_ARG_DESCS,
 }
 
+FLUX_ARG_DESCS = {
+    **BASE_ARG_DESCS,
+}
+
 BASE_ARG_CHOICES = {
     "aspect_ratio": ASPECT_RATIO_CHOICES[:25],
     "sampler": SAMPLER_CHOICES[:25],
@@ -160,6 +166,12 @@ SD3_ARG_CHOICES = {
     "model": SD3_MODEL_CHOICES[:25],
     "lora": SD3_LORA_CHOICES[:25],
     "lora2": SD3_LORA_CHOICES[:25],
+    **BASE_ARG_CHOICES,
+}
+FLUX_ARG_CHOICES = {
+    "model": FLUX_MODEL_CHOICES[:25],
+    "lora": FLUX_LORA_CHOICES[:25],
+    "lora2": FLUX_LORA_CHOICES[:25],
     **BASE_ARG_CHOICES,
 }
 VIDEO_ARG_CHOICES = {k: v for k, v in IMAGINE_ARG_CHOICES.items() if k not in {"lora2", "lora3", "aspect_ratio"}}

@@ -165,6 +165,33 @@ SD3_GENERATION_DEFAULTS = ImageWorkflow(
     tensorrt_model=config["SD3_GENERATION_DEFAULTS"]["TENSORRT_MODEL"],
 )
 
+FLUX_GENERATION_DEFAULTS = ImageWorkflow(
+    ModelType.FLUX,  # model_type
+    None,  # workflow type
+    None,  # prompt
+    None,  # negative_prompt
+    config["FLUX_GENERATION_DEFAULTS"]["MODEL"],
+    None,  # loras
+    None,  # lora_strengths
+    config["FLUX_GENERATION_DEFAULTS"]["ASPECT_RATIO"],  # aspect_ratio
+    config["FLUX_GENERATION_DEFAULTS"]["SAMPLER"],
+    int(config["FLUX_GENERATION_DEFAULTS"]["NUM_STEPS"]),
+    float(config["FLUX_GENERATION_DEFAULTS"]["CFG_SCALE"]),
+    float(config["FLUX_GENERATION_DEFAULTS"]["DENOISE_STRENGTH"]),
+    int(config["FLUX_GENERATION_DEFAULTS"]["BATCH_SIZE"]),  # batch_size
+    None,  # seed
+    None,  # filename
+    "flux",  # slash_command
+    None,  # inpainting_prompt
+    int(config["FLUX_GENERATION_DEFAULTS"]["INPAINTING_DETECTION_THRESHOLD"]),  # inpainting_detection_threshold
+    int(config["FLUX_GENERATION_DEFAULTS"]["CLIP_SKIP"]),
+    llm_profile=config["FLUX_GENERATION_DEFAULTS"]["LLM_PROFILE"],
+    use_align_your_steps=config["FLUX_GENERATION_DEFAULTS"]["USE_ALIGN_YOUR_STEPS"],
+    scheduler=config["FLUX_GENERATION_DEFAULTS"]["SCHEDULER"],
+    use_tensorrt=bool(config["FLUX_GENERATION_DEFAULTS"]["USE_TENSORRT"]) or False,
+    tensorrt_model=config["FLUX_GENERATION_DEFAULTS"]["TENSORRT_MODEL"],
+)
+
 ADD_DETAIL_DEFAULTS = ImageWorkflow(
     None,
     WorkflowType.add_detail,
@@ -190,7 +217,8 @@ COMMAND_DEFAULTS = {
     "video": VIDEO_GENERATION_DEFAULTS,
     "add_detail": ADD_DETAIL_DEFAULTS,
     "upscale": UPSCALE_DEFAULTS,
-    "sd3": SD3_GENERATION_DEFAULTS
+    "sd3": SD3_GENERATION_DEFAULTS,
+    "flux": FLUX_GENERATION_DEFAULTS,
 }
 
 MAX_RETRIES = int(config["BOT"]["MAX_RETRIES"] or 3)

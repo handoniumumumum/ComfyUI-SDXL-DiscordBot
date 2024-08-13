@@ -6,18 +6,27 @@ import discord
 import asyncio
 
 from PIL import Image
+
 from src.defaults import UPSCALE_DEFAULTS, MAX_RETRIES
 from src.image_gen.ImageWorkflow import *
 from src.image_gen.sd_workflows import *
 from src.util import get_loras_from_prompt
 
-model_type_to_workflow = {ModelType.SD15: SD15Workflow, ModelType.SDXL: SDXLWorkflow, ModelType.CASCADE: SDCascadeWorkflow, ModelType.PONY: PonyWorkflow, ModelType.SD3: SD3Workflow}
+model_type_to_workflow = {
+    ModelType.SD15: SD15Workflow,
+    ModelType.SDXL: SDXLWorkflow,
+    ModelType.CASCADE: SDCascadeWorkflow,
+    ModelType.PONY: PonyWorkflow,
+    ModelType.SD3: SD3Workflow,
+    ModelType.FLUX: FluxWorkflow
+}
 
 config = configparser.ConfigParser()
 config.read("config.properties")
 comfy_root_directory = config["LOCAL"]["COMFY_ROOT_DIR"]
 
 loop = None
+
 
 async def _do_txt2img(params: ImageWorkflow, model_type: ModelType, loras: list[Lora], interaction):
     with Workflow() as wf:
@@ -159,6 +168,7 @@ def do_preview(task, node_id, image, interaction):
         asyncio.run_coroutine_threadsafe(interaction.edit_original_response(attachments=[discord.File(fp, filename)]), loop)
     except Exception as e:
         print(e)
+
 
 async def do_workflow(params: ImageWorkflow, interaction: discord.Interaction):
     global user_queues, loop

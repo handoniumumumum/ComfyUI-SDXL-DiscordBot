@@ -23,7 +23,7 @@ async def on_ready():
 
     await asyncio.sleep(1)
     print("server start")
-    from src.image_gen.commands.ImageGenCommands import ImageGenCommands, SDXLCommand
+    from src.image_gen.commands.ImageGenCommands import ImageGenCommands, SDXLCommand, FluxCommand
     commands = []
     commands.append(ImageGenCommands(tree))
     commands.append(SDXLCommand(tree, "sdxl"))
@@ -36,6 +36,10 @@ async def on_ready():
     if len(SD3_ARG_CHOICES["model"]) != 0:
         from src.image_gen.commands.ImageGenCommands import SD3Command
         commands.append(SD3Command(tree, "sd3"))
+    from src.command_descriptions import FLUX_ARG_CHOICES
+    if len(FLUX_ARG_CHOICES["model"]) != 0:
+        from src.image_gen.commands.ImageGenCommands import FluxCommand
+        commands.append(FluxCommand(tree, "FLUX"))
     from src.generic_commands import HelpCommands, InfoCommands
     commands.append(HelpCommands(tree))
     commands.append(InfoCommands(tree))

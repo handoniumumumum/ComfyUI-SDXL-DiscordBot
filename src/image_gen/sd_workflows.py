@@ -169,7 +169,7 @@ class SD3Workflow(SDWorkflow):
         else:
             _, _, vae = CheckpointLoaderSimple(model_name)
             model = TensorRTLoader(tensorrt_model, TensorRTLoader.model_type.sd3)
-        clip = TripleCLIPLoaderGGUF(CLIPs.clip_l, CLIPs.clip_g, CLIPLoaderGGUF.clip_name.t5xxl_Q8_0_gguf)
+        clip = TripleCLIPLoader(CLIPs.clip_l, CLIPs.clip_g, CLIPs.t5xxl_fp16)
         if vae_name is not None:
             vae = VAELoader(vae_name)
         if loras:
@@ -207,7 +207,8 @@ class FluxWorkflow(SDWorkflow):
             model, _, _ = CheckpointLoaderNF4(model_name)
         else:
             model = LoadDiffusionModel(model_name)
-        clip = DualCLIPLoaderGGUF(CLIPLoaderGGUF.clip_name.t5xxl_Q8_0_gguf, CLIPs.clip_l, DualCLIPLoader.type.flux)
+        clip_model = CLIPLoaderGGUF.clip_name.t5xxl_gguf if any(value.name.lower().endswith("gguf") for value in CLIPLoaderGGUF.clip_name) else CLIPs.t5xxl_fp16
+        clip = DualCLIPLoaderGGUF(clip_model, CLIPs.clip_l, DualCLIPLoader.type.flux)
         if loras:
             for lora in loras:
                 if lora.name == None or lora.name == "None":

@@ -207,7 +207,8 @@ class FluxWorkflow(SDWorkflow):
             model, _, _ = CheckpointLoaderNF4(model_name)
         else:
             model = LoadDiffusionModel(model_name)
-        clip = DualCLIPLoader(CLIPs.t5xxl_fp16, CLIPs.clip_l, DualCLIPLoader.type.flux)
+        clip_model = CLIPLoaderGGUF.clip_name.t5xxl_gguf if any(value.name.lower().endswith("gguf") for value in CLIPLoaderGGUF.clip_name) else CLIPs.t5xxl_fp16
+        clip = DualCLIPLoaderGGUF(clip_model, CLIPs.clip_l, DualCLIPLoader.type.flux)
         if loras:
             for lora in loras:
                 if lora.name == None or lora.name == "None":

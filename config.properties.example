@@ -67,6 +67,7 @@ MIN_CFG=1
 MOTION=50
 AUGMENTATION=0
 FPS=8
+USE_ALIGN_YOUR_STEPS=True
 
 [CASCADE_GENERATION_DEFAULTS]
 MODEL=cascade/stable_cascade_stage_c.safetensors

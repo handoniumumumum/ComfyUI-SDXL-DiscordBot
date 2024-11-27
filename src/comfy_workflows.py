@@ -117,7 +117,12 @@ async def _do_video(params: ImageWorkflow, model_type: ModelType, loras: list[Lo
         model, clip_vision, vae = ImageOnlyCheckpointLoader(params.model)
         model = VideoLinearCFGGuidance(model, params.min_cfg)
         positive, negative, latent = SVDImg2vidConditioning(clip_vision, image, vae, 1024, 576, 25, params.motion, 8, params.augmentation)
-        latent = KSampler(model, params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler, positive, negative, latent, 1)
+        if config["VIDEO_GENERATION_DEFAULTS"]["USE_ALIGN_YOUR_STEPS"]:
+            scheduler = AlignYourStepsScheduler("SVD", params.num_steps)
+            sampler = KSamplerSelect("euler")
+            latent, _ = SamplerCustom(model, True, params.seed, params.cfg_scale, positive, negative, sampler, scheduler, latent)
+        else:
+            latent = KSampler(model, params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler, positive, negative, latent, 1)
         image2 = VAEDecode(latent, vae)
         video = VHSVideoCombine(image2, 8, 0, "final_output", "image/gif", False, True, None, None)
         preview = PreviewImage(image)

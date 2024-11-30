@@ -223,11 +223,23 @@ class FluxWorkflow(SDWorkflow):
         self.vae = vae
 
     def sample(self, seed: int, num_samples: int, cfg_scale: float, sampler_name: str, scheduler: str, denoise_strength: float = 1, use_ays: bool = False):
+        self.conditioning = FluxGuidance(self.conditioning, cfg_scale)
         noise = RandomNoise(seed)
         guider = BasicGuider(self.model, self.conditioning)
         sampler = KSamplerSelect(sampler_name)
         sigmas = BasicScheduler(self.model, scheduler, num_samples, denoise_strength)
         self.output_latents, _ = SamplerCustomAdvanced(noise, guider, sampler, sigmas, self.latents[0])
+
+    def unclip_encode(self, image_input: list[Image]):
+        self.clip_vision = CLIPVisionLoader(CLIPVisions.sigclip_vision_patch14_384)
+
+        style_model = StyleModelLoader(StyleModels.flux1_redux_dev)
+
+        for input in image_input:
+            if input is None:
+                continue
+
+            self.conditioning, _, _ = ReduxAdvanced(self.conditioning, style_model, self.clip_vision, input, 1, 'area', 'center crop (square)', 1)
 
 
 class UpscaleWorkflow:

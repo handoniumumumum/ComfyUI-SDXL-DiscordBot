@@ -191,7 +191,7 @@ async def do_workflow(params: ImageWorkflow, interaction: discord.Interaction):
 
     user_queues[user.id] += 1
 
-    queue.watch_display(False, False, False)
+    queue.watch_display(False)
     retries = 0
     while retries < MAX_RETRIES:
         try:

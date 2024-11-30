@@ -90,7 +90,7 @@ async def _do_image_mashup(params: ImageWorkflow, model_type: ModelType, loras: 
         image_inputs = [LoadImage(filename)[0] for filename in [params.filename, params.filename2] if filename is not None]
         workflow.create_latents(params.dimensions, params.batch_size)
         workflow.condition_prompts(params.prompt, params.negative_prompt)
-        workflow.unclip_encode(image_inputs)
+        workflow.unclip_encode(image_inputs, params)
         workflow.sample(params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler or "normal", use_ays=params.use_align_your_steps)
         images = workflow.decode_and_save("final_output")
     wf.task.add_preview_callback(lambda task, node_id, image: do_preview(task, node_id, image, interaction))

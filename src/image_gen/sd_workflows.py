@@ -71,7 +71,7 @@ class SDWorkflow:
         masking = MaskDominantRegion(masking, threshold)
         self.latents[0] = SetLatentNoiseMask(self.latents[0], masking)
 
-    def unclip_encode(self, image_input: list[Image]):
+    def unclip_encode(self, image_input: list[Image], params):
         if self.clip_vision is None:
             self.clip_vision = CLIPVisionLoader(CLIPVisions.CLIP_ViT_bigG_14_laion2B_39B_b160k)
         for input in image_input:
@@ -145,7 +145,7 @@ class SDCascadeWorkflow(SDWorkflow):
         stage_b = RepeatLatentBatch(stage_b, batches)
         self.latents = [stage_c, stage_b]
 
-    def unclip_encode(self, image_input: list[Image]):
+    def unclip_encode(self, image_input: list[Image], params):
         for input in image_input:
             encoded_clip_vision = CLIPVisionEncode(self.clip_vision, input)
             self.conditioning = UnCLIPConditioning(self.conditioning, encoded_clip_vision)
@@ -230,16 +230,17 @@ class FluxWorkflow(SDWorkflow):
         sigmas = BasicScheduler(self.model, scheduler, num_samples, denoise_strength)
         self.output_latents, _ = SamplerCustomAdvanced(noise, guider, sampler, sigmas, self.latents[0])
 
-    def unclip_encode(self, image_input: list[Image]):
+    def unclip_encode(self, image_input: list[Image], params):
         self.clip_vision = CLIPVisionLoader(CLIPVisions.sigclip_vision_patch14_384)
 
         style_model = StyleModelLoader(StyleModels.flux1_redux_dev)
 
-        for input in image_input:
+        for i, input in enumerate(image_input):
+            mashup_strength = params.mashup_image_strength if i == 0 else params.mashup_inputimage_strength
             if input is None:
                 continue
 
-            self.conditioning, _, _ = ReduxAdvanced(self.conditioning, style_model, self.clip_vision, input, 1, 'area', 'center crop (square)', 1)
+            self.conditioning, _, _ = ReduxAdvanced(self.conditioning, style_model, self.clip_vision, input, 1, 'area', 'center crop (square)', mashup_strength)
 
 
 class UpscaleWorkflow:

@@ -190,6 +190,8 @@ FLUX_GENERATION_DEFAULTS = ImageWorkflow(
     scheduler=config["FLUX_GENERATION_DEFAULTS"]["SCHEDULER"],
     use_tensorrt=bool(config["FLUX_GENERATION_DEFAULTS"]["USE_TENSORRT"]) or False,
     tensorrt_model=config["FLUX_GENERATION_DEFAULTS"]["TENSORRT_MODEL"],
+    mashup_image_strength=float(config["FLUX_GENERATION_DEFAULTS"]["MASHUP_IMAGE1_STRENGTH"]),
+    mashup_inputimage_strength=float(config["FLUX_GENERATION_DEFAULTS"]["MASHUP_IMAGE2_STRENGTH"]),
 )
 
 ADD_DETAIL_DEFAULTS = ImageWorkflow(

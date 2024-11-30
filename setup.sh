@@ -99,6 +99,24 @@ fi
 cd comfy_controlnet_preprocessors
 pip install -r requirements.txt -U --extra-index-url %TORCH_CUDA_INDEX_URL%
 
+cd "$EMBEDDED_COMFY_LOCATION/custom_nodes"
+if [ ! -d ComfyUI_AdvancedRefluxControl ]; then
+  git clone https://github.com/kaibioinfo/ComfyUI_AdvancedRefluxControl.git
+  echo "cloned ComfyUI_AdvancedRefluxControl"
+fi
+cd ComfyUI_AdvancedRefluxControl
+pip install -r requirements.txt -U --extra-index-url %TORCH_CUDA_INDEX_URL%
+
+cd "$EMBEDDED_COMFY_LOCATION/custom_nodes"
+if [ ! -d ComfyUI-GGUF ]; then
+  git clone https://github.com/city96/ComfyUI-GGUF.git
+  echo "cloned ComfyUI-GGUF"
+fi
+cd ComfyUI-GGUF
+pip install -r requirements.txt -U --extra-index-url %TORCH_CUDA_INDEX_URL%
+
+
+
 cd "$EMBEDDED_COMFY_LOCATION/models/checkpoints"
 mkdir -p xl 15 cascade pony svd
 

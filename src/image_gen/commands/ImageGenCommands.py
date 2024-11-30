@@ -285,6 +285,8 @@ class SDXLCommand(ImageGenCommands):
             style_prompt: Optional[str] = None,
             negative_style_prompt: Optional[str] = None,
             use_llm: Optional[bool] = None,
+            mashup_image_strength: Optional[float] = None,
+            mashup_inputimage_strength: Optional[float] = None
         ):
             if input_file is not None:
                 fp = await process_attachment(input_file, interaction)
@@ -333,6 +335,8 @@ class SDXLCommand(ImageGenCommands):
                 use_align_your_steps=bool(defaults.use_align_your_steps),
                 use_tensorrt=defaults.use_tensorrt or False,
                 tensorrt_model=defaults.tensorrt_model,
+                mashup_image_strength=mashup_image_strength,
+                mashup_inputimage_strength=mashup_inputimage_strength
             )
 
             await self._do_request(

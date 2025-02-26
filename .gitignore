@@ -7,3 +7,4 @@ config.properties
 *.spec
 /embedded_comfy/
 /venv/
+output - Shortcut.lnk

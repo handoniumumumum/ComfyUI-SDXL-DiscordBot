@@ -7,3 +7,5 @@ config.properties
 *.spec
 /embedded_comfy/
 /venv/
+output - Shortcut.lnk
+data/voice_selections.json

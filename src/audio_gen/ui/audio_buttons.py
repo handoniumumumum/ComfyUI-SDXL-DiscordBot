@@ -44,7 +44,7 @@ class AudioButtons(discord.ui.View):
     async def edit(self, interaction, button):
         params: AudioWorkflow = deepcopy(self.params)
         # params.workflow_name = MUSIC_WORKFLOW
-        params.snd_filename = None  # params.snd_filename[index]
+        params.snd_filename = self.sound_fnames[0]
         params.vid_filename = None
 
         modal = AudioEditModal(params, "edit")
@@ -81,13 +81,13 @@ class AudioButtons(discord.ui.View):
         await interaction.response.send_message(info_str, ephemeral=True)
 
 
-class AudioEditModal(ui.Modal, title="Edit/Extend Sound"):
+class AudioEditModal(ui.Modal, title="Edit or Extend Sound"):
     def __init__(self, params: AudioWorkflow, command: str):
-        super().__init__(timeout=120)
+        super().__init__(timeout=None)
         self.params = params
         self.command = command
 
-        self.prompt = ui.TextInput(label="Prompt", placeholder="Enter a prompt", max_length=256, required=False, default=self.params.prompt or "")
+        self.prompt = ui.TextInput(label="Prompt", placeholder="Enter a prompt", max_length=256, required=False, default=self.params.prompt or "", style=discord.TextStyle.paragraph)
         self.cfg = ui.TextInput(label="Guidance Scale", placeholder="Controls audio's conformance to text prompt; default 3.0", default=str(self.params.cfg))
         self.temperature = ui.TextInput(
             label="Temperature", placeholder="Controls randomness during prediction; default 1.0", default=str(self.params.temperature)

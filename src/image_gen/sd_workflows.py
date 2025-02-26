@@ -132,7 +132,7 @@ class SDCascadeWorkflow(SDWorkflow):
                 if lora.name == None or lora.name == "None":
                     continue
                 self.model, self.clip = LoraLoader(self.model, self.clip, lora.name, lora.strength, lora.strength)
-        self.stage_b_model, self.stage_b_clip, self.vae = CheckpointLoaderSimple(Checkpoints.cascade_stable_cascade_stage_b)
+        self.stage_b_model, self.stage_b_clip, self.vae = CheckpointLoaderSimple(Checkpoints.stable_cascade_stage_b)
 
     def create_latents(self, dimensions: tuple[int, int], batches: int):
         width, height = dimensions
@@ -169,7 +169,7 @@ class SD3Workflow(SDWorkflow):
         else:
             _, _, vae = CheckpointLoaderSimple(model_name)
             model = TensorRTLoader(tensorrt_model, TensorRTLoader.model_type.sd3)
-        clip = TripleCLIPLoader(CLIPs.clip_l, CLIPs.clip_g, CLIPs.t5xxl_fp16)
+        clip = TripleCLIPLoader(CLIPs.clip_l, CLIPs.clip_g, CLIPs.clip)
         if vae_name is not None:
             vae = VAELoader(vae_name)
         if loras:
@@ -230,6 +230,8 @@ class FluxWorkflow(SDWorkflow):
         sigmas = BasicScheduler(self.model, scheduler, num_samples, denoise_strength)
         self.output_latents, _ = SamplerCustomAdvanced(noise, guider, sampler, sigmas, self.latents[0])
 
+# make condition prompts
+    
     def unclip_encode(self, image_input: list[Image], params):
         self.clip_vision = CLIPVisionLoader(CLIPVisions.sigclip_vision_patch14_384)
 

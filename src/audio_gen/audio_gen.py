@@ -93,11 +93,13 @@ async def extend_audio(params: AudioWorkflow):
             rate = f.getframerate()
             initial_duration = frames / float(rate)
         model, model_sr = MusicgenLoader()
-        audio, sr, duration = LoadAudio(params.snd_filename.replace(config["LOCAL"]["COMFY_ROOT_DIR"], "").replace("/output/",""))
+        print(params.snd_filename)
+        print(params.snd_filename.replace(config["LOCAL"]["COMFY_ROOT_DIR"], "").replace("/output/",""))
+        audio, sr, duration = AudioLoader(params.snd_filename.replace(config["LOCAL"]["COMFY_ROOT_DIR"], "").replace("\\output\\",""))
         audio = ConvertAudio(audio, sr, model_sr, 1)
-        audio = ClipAudio(audio, model_sr, initial_duration - 10.0, duration)
+        audio = ClipAudioRegion(audio, model_sr, initial_duration - 10.0, duration)
         raw_audio = MusicgenGenerate(model, params.prompt, 4, max(initial_duration + 10, 20), params.cfg, params.top_k, params.top_p, params.temperature, params.seed or random.randint(0, 2**32 - 1), audio)
-        raw_audio = ClipAudio(raw_audio, model_sr, 0, initial_duration - 10.0)
+        raw_audio = ClipAudioRegion(raw_audio, model_sr, 0, initial_duration - 10.0)
         audio = ConcatAudio(audio, raw_audio)
         spectrogram_image = SpectrogramImage(audio, 1024, 256, 1024, 0.4)
         spectrogram_image = ImageResize(spectrogram_image, ImageResize.mode.resize, True, ImageResize.resampling.lanczos, 2, 512, 128)
@@ -108,10 +110,10 @@ async def extend_audio(params: AudioWorkflow):
 async def generate_tts(params: AudioWorkflow):
     with Workflow():
         model, sr = TortoiseTTSLoader(True, False, False, False)
-        raw_audio = TortoiseTTSGenerate(model, params.voice, params.prompt, 4, 8, 8, 0.3, 2, 4, 0.8, 300, 0.7000000000000001, 10, True, 2, 1, params.seed or random.randint(0, 2**32 - 1))
+        raw_audio = TortoiseTTSGenerate(model, params.voice, params.prompt, 4, 8, 8, 0.3, 2, 4, 0.8, 320, 0.7000000000000001, 12, True, 2, 1, params.seed or random.randint(0, 2**32 - 1))
         raw_audio = ConvertAudio(raw_audio, sr, 44100, 1)
         image = SpectrogramImage(raw_audio, 1024, 256, 1024, 0.5, True, True)
-        image = ImageResize(image, "rescale", 'true', "bicubic", 2, 512, 128)
+        image = ImageResize(image, "resize", 'true', "bicubic", 0.5, 512, 128)
         image_preview = SaveImage(image, 'spectrogram')
         video = CombineImageWithAudio(image, raw_audio, 44100, "webm", 'final_output')
     await image_preview
@@ -122,7 +124,7 @@ async def generate_music_with_tts(params: AudioWorkflow):
     async with Workflow():
         model, sr = MusicgenLoader()
         tts_model, tts_sr = TortoiseTTSLoader(True, False, False, False)
-        audio = TortoiseTTSGenerate(tts_model, params.voice, params.prompt, 1, 8, 8, 0.3, 2, 4, 0.8, 300, 0.7000000000000001, 10, True, 2, 1, params.seed or random.randint(0, 2**32 - 1))
+        audio = TortoiseTTSGenerate(tts_model, params.voice, params.prompt, 1, 8, 8, 1, 1, 2, 0.8, 300, 0.7000000000000001, 10, True, 2, 1, params.seed or random.randint(0, 2**32 - 1))
         audio = ConvertAudio(audio, tts_sr, sr, 1)
         audio = MusicgenGenerate(model, params.secondary_prompt, 4, 15, params.cfg, params.top_k, params.top_p, params.temperature, params.seed or random.randint(0, 2**32 - 1), audio)
         spectrogram_image = SpectrogramImage(audio, 1024, 256, 1024, 0.5, True, True)

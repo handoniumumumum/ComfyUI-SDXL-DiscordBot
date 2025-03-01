@@ -7,7 +7,7 @@ import asyncio
 
 from PIL import Image
 
-from src.defaults import UPSCALE_DEFAULTS, MAX_RETRIES
+from src.defaults import UPSCALE_DEFAULTS, MAX_RETRIES, WAN_GENERATION_DEFAULTS
 from src.image_gen.ImageWorkflow import *
 from src.image_gen.sd_workflows import *
 from src.util import get_loras_from_prompt
@@ -133,6 +133,25 @@ async def _do_video(params: ImageWorkflow, model_type: ModelType, loras: list[Lo
     final_video = PIL.Image.open(os.path.join(comfy_root_directory, "output", results["gifs"][0]["filename"]))
     return [final_video]
 
+async def _do_wan(params: ImageWorkflow, model_type: ModelType, loras: list[Lora], interaction):
+    import PIL
+
+    with Workflow() as wf:
+       
+        model = UNETLoader(WAN_GENERATION_DEFAULTS.model)
+        clip = CLIPLoader("umt5_xxl_fp8_e4m3fn_scaled.safetensors", "wan")
+        vae = VAELoader("wan_2.1_vae.safetensors")
+        conditioning = CLIPTextEncode(params.prompt, clip)
+        negative_conditioning = CLIPTextEncode(params.negative_prompt or "", clip)
+        latent = EmptyHunyuanLatentVideo(length = 33)
+        latent = KSampler(model, params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler, conditioning, negative_conditioning, latent, 1)
+        image2 = VAEDecode(latent, vae)
+        video = SaveWEBM(image2, "video_output", "vp9", 16)
+    wf.task.add_preview_callback(lambda task, node_id, image: do_preview(task, node_id, image, interaction))
+    await video._wait()
+    results = video.wait()._output
+    final_video = PIL.Image.open(os.path.join(comfy_root_directory, "output", results[0]["filename"]))
+    return [final_video]
 
 def process_prompt_with_llm(positive_prompt: str, seed: int, profile: str):
     from src.defaults import llm_prompt, llm_parameters
@@ -158,6 +177,7 @@ workflow_type_to_method = {
     WorkflowType.add_detail: _do_add_detail,
     WorkflowType.image_mashup: _do_image_mashup,
     WorkflowType.video: _do_video,
+    WorkflowType.wan: _do_wan
 }
 
 user_queues = {}

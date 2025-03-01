@@ -127,6 +127,38 @@ class ImageGenCommands:
                 "video",
                 params,
             )
+            
+        @self.tree.command(name="wan", description="Generate a video based on a prompt")
+        @app_commands.describe(**WAN_ARG_DESCS)
+        async def slash_command(
+            interaction: discord.Interaction,
+            prompt: str,
+            negative_prompt: str = None,
+            cfg_scale: Range[float, 1.0, MAX_CFG] = None,
+            seed: int = None,
+        ):
+
+            params = ImageWorkflow(
+                ModelType.VIDEO,
+                WorkflowType.wan,
+                prompt,
+                negative_prompt,
+                model=WAN_GENERATION_DEFAULTS.model,
+                num_steps=WAN_GENERATION_DEFAULTS.num_steps,
+                cfg_scale=cfg_scale or WAN_GENERATION_DEFAULTS.cfg_scale,
+                seed=seed,
+                slash_command="wan",
+                sampler=WAN_GENERATION_DEFAULTS.sampler,
+                scheduler=WAN_GENERATION_DEFAULTS.scheduler,
+                fps=VIDEO_GENERATION_DEFAULTS.fps,
+            )
+            await self._do_request(
+                interaction,
+                f"🎥{interaction.user.mention} asked me to create a video with WAN! {random.choice(generation_messages)} 🎥",
+                f"{interaction.user.mention} asked me to create video with WAN! {random.choice(completion_messages)} 🎥",
+                "wan",
+                params,
+            )
 
         @self.tree.command(name="cascade", description="Use Stable Cascade to generate an image")
         @app_commands.describe(**CASCADE_ARG_DESCS)

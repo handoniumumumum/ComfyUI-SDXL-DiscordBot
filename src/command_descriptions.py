@@ -110,7 +110,11 @@ VIDEO_ARG_DESCS = {
     "motion": f"The amount of motion in the video. Default: {VIDEO_GENERATION_DEFAULTS.motion}",
     "augmentation": f"How much the video will differ from your starting image. Introduces a lot of noise. Default: {VIDEO_GENERATION_DEFAULTS.augmentation}",
 }
-
+WAN_ARG_DESCS = {
+    "prompt": "Prompt for the video being generated",
+    "negative_prompt": "Prompt for what you want to steer the AI away from",
+    "cfg_scale": f"range [1.0, {MAX_CFG}]; Degree to which AI should follow prompt"
+}
 CASCADE_ARG_DESCS = {
     **BASE_ARG_DESCS,
     "lora": "LoRA to apply",

@@ -110,6 +110,26 @@ VIDEO_GENERATION_DEFAULTS = ImageWorkflow(
     fps=int(config["VIDEO_GENERATION_DEFAULTS"]["FPS"]),
 )
 
+WAN_GENERATION_DEFAULTS = ImageWorkflow(
+    ModelType.VIDEO,  # model_type
+    WorkflowType.wan,  # workflow type
+    None,  # prompt
+    None,  # negative_prompt
+    config["WAN_GENERATION_DEFAULTS"]["MODEL"],
+    None,  # loras
+    None,  # lora_strengths
+    None,  # aspect_ratio
+    config["WAN_GENERATION_DEFAULTS"]["SAMPLER"],
+    int(config["WAN_GENERATION_DEFAULTS"]["NUM_STEPS"]),
+    float(config["WAN_GENERATION_DEFAULTS"]["CFG_SCALE"]),
+    int(config["WAN_GENERATION_DEFAULTS"]["BATCH_SIZE"]),  # batch_size
+    None,  # denoise_strength
+    None,  # seed
+    None,  # filename
+    "wan",  # slash_command
+    fps=int(config["WAN_GENERATION_DEFAULTS"]["FPS"]),
+)
+
 PONY_GENERATION_DEFAULTS = ImageWorkflow(
     ModelType.SDXL,  # model_type
     None,  # workflow type

@@ -152,7 +152,7 @@ class Buttons(discord.ui.View, EditableButton, RerollableButton, DeletableButton
         self.author = author
         self.command = command
 
-        self.is_video = command == "video"
+        self.is_video = command == "video" or command == "wan"
 
         # upscaling/alternative buttons not needed for video
         if self.is_video:

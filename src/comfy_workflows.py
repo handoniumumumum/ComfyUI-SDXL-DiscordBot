@@ -146,11 +146,11 @@ async def _do_wan(params: ImageWorkflow, model_type: ModelType, loras: list[Lora
         latent = EmptyHunyuanLatentVideo(length = 33)
         latent = KSampler(model, params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler, conditioning, negative_conditioning, latent, 1)
         image2 = VAEDecode(latent, vae)
-        video = SaveWEBM(image2, "video_output", "vp9", 16)
+        video = VHSVideoCombine(image2, 16, 0, "final_output", "image/gif", False, True, None, None)
     wf.task.add_preview_callback(lambda task, node_id, image: do_preview(task, node_id, image, interaction))
     await video._wait()
     results = video.wait()._output
-    final_video = PIL.Image.open(os.path.join(comfy_root_directory, "output", results[0]["filename"]))
+    final_video = PIL.Image.open(os.path.join(comfy_root_directory, "output", results["gifs"][0]["filename"]))
     return [final_video]
 
 def process_prompt_with_llm(positive_prompt: str, seed: int, profile: str):

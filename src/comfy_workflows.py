@@ -143,7 +143,7 @@ async def _do_wan(params: ImageWorkflow, model_type: ModelType, loras: list[Lora
         vae = VAELoader("wan_2.1_vae.safetensors")
         conditioning = CLIPTextEncode(params.prompt, clip)
         negative_conditioning = CLIPTextEncode(params.negative_prompt or "", clip)
-        latent = EmptyHunyuanLatentVideo(length = 33)
+        latent = EmptyHunyuanLatentVideo(width=480, height = 480, length = 33)
         latent = KSampler(model, params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler, conditioning, negative_conditioning, latent, 1)
         image2 = VAEDecode(latent, vae)
         video = VHSVideoCombine(image2, 16, 0, "final_output", "image/gif", False, True, None, None)

@@ -103,14 +103,19 @@ SDXL_ARG_DESCS = {
     "inpainting_detection_threshold": f"range [0, 255], default {SDXL_GENERATION_DEFAULTS.inpainting_detection_threshold}; Detection threshold for inpainting. Only works when inpainting_prompt is set",
     "clip_skip": f"default: {SDXL_GENERATION_DEFAULTS.clip_skip}",
 }
-VIDEO_ARG_DESCS = {
+SVD_ARG_DESCS = {
     "input_file": "Starting image for video generation",
-    "cfg_scale": f"range [1.0, {MAX_CFG}]; Degree to which AI should adhere to the starting image. Default: {VIDEO_GENERATION_DEFAULTS.cfg_scale}",
-    "min_cfg": f"Starting CFG value. Generation will move to CFG_SCALE over the length of the video. Default: {VIDEO_GENERATION_DEFAULTS.min_cfg}",
-    "motion": f"The amount of motion in the video. Default: {VIDEO_GENERATION_DEFAULTS.motion}",
-    "augmentation": f"How much the video will differ from your starting image. Introduces a lot of noise. Default: {VIDEO_GENERATION_DEFAULTS.augmentation}",
+    "cfg_scale": f"range [1.0, {MAX_CFG}]; Degree to which AI should adhere to the starting image. Default: {SVD_GENERATION_DEFAULTS.cfg_scale}",
+    "min_cfg": f"Starting CFG value. Generation will move to CFG_SCALE over the length of the video. Default: {SVD_GENERATION_DEFAULTS.min_cfg}",
+    "motion": f"The amount of motion in the video. Default: {SVD_GENERATION_DEFAULTS.motion}",
+    "augmentation": f"How much the video will differ from your starting image. Introduces a lot of noise. Default: {SVD_GENERATION_DEFAULTS.augmentation}",
 }
-
+VIDEO_ARG_DESCS = {
+    "prompt": "Prompt for the video being generated",
+    "negative_prompt": "Prompt for what you want to steer the AI away from",
+    "cfg_scale": f"range [1.0, {MAX_CFG}]; Degree to which AI should follow prompt",
+    "input_file": "Image to use as input"
+}
 CASCADE_ARG_DESCS = {
     **BASE_ARG_DESCS,
     "lora": "LoRA to apply",

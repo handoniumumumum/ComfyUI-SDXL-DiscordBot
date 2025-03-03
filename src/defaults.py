@@ -87,7 +87,7 @@ CASCADE_GENERATION_DEFAULTS = ImageWorkflow(
     llm_profile=config["CASCADE_GENERATION_DEFAULTS"]["LLM_PROFILE"],
 )
 
-VIDEO_GENERATION_DEFAULTS = ImageWorkflow(
+SVD_GENERATION_DEFAULTS = ImageWorkflow(
     ModelType.VIDEO,  # model_type
     None,  # workflow type
     None,  # prompt
@@ -103,12 +103,53 @@ VIDEO_GENERATION_DEFAULTS = ImageWorkflow(
     None,  # denoise_strength
     None,  # seed
     None,  # filename
-    "video",  # slash_command
+    "svd",  # slash_command
     min_cfg=float(config["VIDEO_GENERATION_DEFAULTS"]["MIN_CFG"]),
     motion=int(config["VIDEO_GENERATION_DEFAULTS"]["MOTION"]),
     augmentation=float(config["VIDEO_GENERATION_DEFAULTS"]["AUGMENTATION"]),
     fps=int(config["VIDEO_GENERATION_DEFAULTS"]["FPS"]),
 )
+
+WAN_GENERATION_DEFAULTS = ImageWorkflow(
+    ModelType.VIDEO,  # model_type
+    WorkflowType.wan,  # workflow type
+    None,  # prompt
+    None,  # negative_prompt
+    config["WAN_GENERATION_DEFAULTS"]["MODEL"],
+    None,  # loras
+    None,  # lora_strengths
+    None,  # aspect_ratio
+    config["WAN_GENERATION_DEFAULTS"]["SAMPLER"],
+    int(config["WAN_GENERATION_DEFAULTS"]["NUM_STEPS"]),
+    float(config["WAN_GENERATION_DEFAULTS"]["CFG_SCALE"]),
+    int(config["WAN_GENERATION_DEFAULTS"]["BATCH_SIZE"]),  # batch_size
+    None,  # denoise_strength
+    None,  # seed
+    None,  # filename
+    "video",  # slash_command
+    fps=int(config["WAN_GENERATION_DEFAULTS"]["FPS"]),
+)
+
+IMAGE_WAN_GENERATION_DEFAULTS = ImageWorkflow(
+    ModelType.VIDEO,  # model_type
+    WorkflowType.image_wan,  # workflow type
+    None,  # prompt
+    None,  # negative_prompt
+    config["IMAGE_WAN_GENERATION_DEFAULTS"]["MODEL"],
+    None,  # loras
+    None,  # lora_strengths
+    None,  # aspect_ratio
+    config["IMAGE_WAN_GENERATION_DEFAULTS"]["SAMPLER"],
+    int(config["IMAGE_WAN_GENERATION_DEFAULTS"]["NUM_STEPS"]),
+    float(config["IMAGE_WAN_GENERATION_DEFAULTS"]["CFG_SCALE"]),
+    int(config["IMAGE_WAN_GENERATION_DEFAULTS"]["BATCH_SIZE"]),  # batch_size
+    None,  # denoise_strength
+    None,  # seed
+    None,  # filename
+    "video",  # slash_command
+    fps=int(config["IMAGE_WAN_GENERATION_DEFAULTS"]["FPS"]),
+)
+
 
 PONY_GENERATION_DEFAULTS = ImageWorkflow(
     ModelType.SDXL,  # model_type
@@ -216,7 +257,7 @@ COMMAND_DEFAULTS = {
     "sdxl": SDXL_GENERATION_DEFAULTS,
     "cascade": CASCADE_GENERATION_DEFAULTS,
     "pony": PONY_GENERATION_DEFAULTS,
-    "video": VIDEO_GENERATION_DEFAULTS,
+    "video": SVD_GENERATION_DEFAULTS,
     "add_detail": ADD_DETAIL_DEFAULTS,
     "upscale": UPSCALE_DEFAULTS,
     "sd3": SD3_GENERATION_DEFAULTS,

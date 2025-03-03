@@ -100,7 +100,7 @@ async def _do_image_mashup(params: ImageWorkflow, model_type: ModelType, loras: 
     return image_batch
 
 
-async def _do_video(params: ImageWorkflow, model_type: ModelType, loras: list[Lora], interaction):
+async def _do_svd(params: ImageWorkflow, model_type: ModelType, loras: list[Lora], interaction):
     import PIL
 
     with open(params.filename, "rb") as f:
@@ -133,17 +133,45 @@ async def _do_video(params: ImageWorkflow, model_type: ModelType, loras: list[Lo
     final_video = PIL.Image.open(os.path.join(comfy_root_directory, "output", results["gifs"][0]["filename"]))
     return [final_video]
 
+async def _do_image_wan(params: ImageWorkflow, model_type: ModelType, loras: list[Lora], interaction):
+    with Workflow() as wf:
+        
+        image = LoadImage(params.filename)[0]
+        if params.model.endswith(".gguf"):
+            model = UnetLoaderGGUF(params.model)
+        else:
+            model = UNETLoader()
+        model = ModelSamplingSD3(model, 8)
+        clip = CLIPLoader("umt5_xxl_fp8_e4m3fn_scaled.safetensors", "wan")
+        vae = VAELoader("wan_2.1_vae.safetensors")
+        clip_vision = CLIPVisionLoader('CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors')
+        positive = CLIPTextEncode(params.prompt, clip)
+        negative = CLIPTextEncode(params.negative_prompt or "静态", clip) # 静态 means "static"
+        clip_vision_output = CLIPVisionEncode(clip_vision, image)
+        positive, negative, latent = WanImageToVideo(positive, negative, vae, 512, 512, 32, 1, clip_vision_output, image)
+        latent = KSampler(model, params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler, positive, negative, latent, 1)
+        image2 = VAEDecode(latent, vae)
+        video = VHSVideoCombine(image2, 16, 0, "final_output", "image/gif", False, True, None, None)
+        preview = PreviewImage(image)
+    wf.task.add_preview_callback(lambda task, node_id, image: do_preview(task, node_id, image, interaction))
+    await preview._wait()
+    await video._wait()
+    results = video.wait()._output
+    final_video = PIL.Image.open(os.path.join(comfy_root_directory, "output", results["gifs"][0]["filename"]))
+    return [final_video]
+
 async def _do_wan(params: ImageWorkflow, model_type: ModelType, loras: list[Lora], interaction):
     import PIL
 
     with Workflow() as wf:
        
         model = UNETLoader(WAN_GENERATION_DEFAULTS.model)
+        model = ModelSamplingSD3(model, 8)
         clip = CLIPLoader("umt5_xxl_fp8_e4m3fn_scaled.safetensors", "wan")
         vae = VAELoader("wan_2.1_vae.safetensors")
         conditioning = CLIPTextEncode(params.prompt, clip)
-        negative_conditioning = CLIPTextEncode(params.negative_prompt or "", clip)
-        latent = EmptyHunyuanLatentVideo(width=480, height = 480, length = 33)
+        negative_conditioning = CLIPTextEncode(params.negative_prompt or "静态", clip) # 静态 means "static"
+        latent = EmptyHunyuanLatentVideo(width=512, height = 512, length = 32)
         latent = KSampler(model, params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler, conditioning, negative_conditioning, latent, 1)
         image2 = VAEDecode(latent, vae)
         video = VHSVideoCombine(image2, 16, 0, "final_output", "image/gif", False, True, None, None)
@@ -176,8 +204,9 @@ workflow_type_to_method = {
     WorkflowType.upscale: _do_upscale,
     WorkflowType.add_detail: _do_add_detail,
     WorkflowType.image_mashup: _do_image_mashup,
-    WorkflowType.video: _do_video,
-    WorkflowType.wan: _do_wan
+    WorkflowType.svd: _do_svd,
+    WorkflowType.wan: _do_wan,
+    WorkflowType.image_wan: _do_image_wan
 }
 
 user_queues = {}

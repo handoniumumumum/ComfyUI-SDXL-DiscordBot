@@ -83,8 +83,8 @@ class ImageGenCommands:
                 params,
             )
 
-        @self.tree.command(name="video", description="Generate a video based on an input image")
-        @app_commands.describe(**VIDEO_ARG_DESCS)
+        @self.tree.command(name="svd", description="Generate a video based on an input image using StableVideoDiffusion")
+        @app_commands.describe(**SVD_ARG_DESCS)
         # @app_commands.choices(**VIDEO_ARG_CHOICES)
         async def slash_command(
             interaction: discord.Interaction,
@@ -104,53 +104,62 @@ class ImageGenCommands:
 
             params = ImageWorkflow(
                 ModelType.VIDEO,
-                WorkflowType.video,
+                WorkflowType.svd,
                 "",
                 "",
-                model=VIDEO_GENERATION_DEFAULTS.model,
-                num_steps=VIDEO_GENERATION_DEFAULTS.num_steps,
-                cfg_scale=cfg_scale or VIDEO_GENERATION_DEFAULTS.cfg_scale,
+                model=SVD_GENERATION_DEFAULTS.model,
+                num_steps=SVD_GENERATION_DEFAULTS.num_steps,
+                cfg_scale=cfg_scale or SVD_GENERATION_DEFAULTS.cfg_scale,
                 seed=seed,
-                slash_command="video",
-                sampler=VIDEO_GENERATION_DEFAULTS.sampler,
-                scheduler=VIDEO_GENERATION_DEFAULTS.scheduler,
-                min_cfg=min_cfg or VIDEO_GENERATION_DEFAULTS.min_cfg,
-                motion=motion or VIDEO_GENERATION_DEFAULTS.motion,
-                augmentation=augmentation or VIDEO_GENERATION_DEFAULTS.augmentation,
-                fps=VIDEO_GENERATION_DEFAULTS.fps,
+                slash_command="svd",
+                sampler=SVD_GENERATION_DEFAULTS.sampler,
+                scheduler=SVD_GENERATION_DEFAULTS.scheduler,
+                min_cfg=min_cfg or SVD_GENERATION_DEFAULTS.min_cfg,
+                motion=motion or SVD_GENERATION_DEFAULTS.motion,
+                augmentation=augmentation or SVD_GENERATION_DEFAULTS.augmentation,
+                fps=SVD_GENERATION_DEFAULTS.fps,
                 filename=await process_attachment(input_file, interaction),
             )
             await self._do_request(
                 interaction,
-                f"🎥{interaction.user.mention} asked me to create a video! {random.choice(generation_messages)} 🎥",
-                f"{interaction.user.mention} asked me to create video! {random.choice(completion_messages)} 🎥",
+                f"🎥{interaction.user.mention} asked me to create a video with SVD! {random.choice(generation_messages)} 🎥",
+                f"{interaction.user.mention} asked me to create video with SVD! {random.choice(completion_messages)} 🎥",
                 "video",
                 params,
             )
             
-        @self.tree.command(name="wan", description="Generate a video based on a prompt")
-        @app_commands.describe(**WAN_ARG_DESCS)
+        @self.tree.command(name="video", description="Generate a video based on a prompt")
+        @app_commands.describe(**VIDEO_ARG_DESCS)
         async def slash_command(
             interaction: discord.Interaction,
             prompt: str,
             negative_prompt: str = None,
             cfg_scale: Range[float, 1.0, MAX_CFG] = None,
+            input_file: Attachment = None,
             seed: int = None,
         ):
+            if input_file.content_type not in ["image/png", "image/jpeg", "image/jpg"]:
+                await interaction.response.send_message(
+                    f"{interaction.user.mention} `Only PNG, JPG, and JPEG images are supported for video generation`",
+                    ephemeral=True,
+                )
+                return
 
             params = ImageWorkflow(
                 ModelType.VIDEO,
-                WorkflowType.wan,
+                WorkflowType.wan if input_file == None else WorkflowType.image_wan,
                 prompt,
                 negative_prompt,
-                model=WAN_GENERATION_DEFAULTS.model,
-                num_steps=WAN_GENERATION_DEFAULTS.num_steps,
+                model=WAN_GENERATION_DEFAULTS.model if input_file == None else IMAGE_WAN_GENERATION_DEFAULTS.model,
+                num_steps=WAN_GENERATION_DEFAULTS.num_steps if input_file == None else IMAGE_WAN_GENERATION_DEFAULTS.num_steps,
                 cfg_scale=cfg_scale or WAN_GENERATION_DEFAULTS.cfg_scale,
                 seed=seed,
-                slash_command="wan",
-                sampler=WAN_GENERATION_DEFAULTS.sampler,
-                scheduler=WAN_GENERATION_DEFAULTS.scheduler,
-                fps=VIDEO_GENERATION_DEFAULTS.fps,
+                slash_command="video",
+                sampler=WAN_GENERATION_DEFAULTS.sampler if input_file == None else IMAGE_WAN_GENERATION_DEFAULTS.sampler,
+                scheduler=WAN_GENERATION_DEFAULTS.scheduler if input_file == None else IMAGE_WAN_GENERATION_DEFAULTS.scheduler,
+                fps=WAN_GENERATION_DEFAULTS.fps if input_file == None else IMAGE_WAN_GENERATION_DEFAULTS.fps,
+                filename=await process_attachment(input_file, interaction) if input_file != None else None
+
             )
             await self._do_request(
                 interaction,

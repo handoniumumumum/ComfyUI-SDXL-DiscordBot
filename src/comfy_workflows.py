@@ -7,7 +7,7 @@ import asyncio
 
 from PIL import Image
 
-from src.defaults import UPSCALE_DEFAULTS, MAX_RETRIES, WAN_GENERATION_DEFAULTS
+from src.defaults import UPSCALE_DEFAULTS, MAX_RETRIES
 from src.image_gen.ImageWorkflow import *
 from src.image_gen.sd_workflows import *
 from src.util import get_loras_from_prompt
@@ -140,7 +140,7 @@ async def _do_image_wan(params: ImageWorkflow, model_type: ModelType, loras: lis
         if params.model.endswith(".gguf"):
             model = UnetLoaderGGUF(params.model)
         else:
-            model = UNETLoader()
+            model = UNETLoader(params.model)
         model = ModelSamplingSD3(model, 8)
         clip = CLIPLoader("umt5_xxl_fp8_e4m3fn_scaled.safetensors", "wan")
         vae = VAELoader("wan_2.1_vae.safetensors")
@@ -164,8 +164,11 @@ async def _do_wan(params: ImageWorkflow, model_type: ModelType, loras: list[Lora
     import PIL
 
     with Workflow() as wf:
-       
-        model = UNETLoader(WAN_GENERATION_DEFAULTS.model)
+        image = LoadImage(params.filename)[0]
+        if params.model.endswith(".gguf"):
+            model = UnetLoaderGGUF(params.model)
+        else:
+            model = UNETLoader(params.model)
         model = ModelSamplingSD3(model, 8)
         clip = CLIPLoader("umt5_xxl_fp8_e4m3fn_scaled.safetensors", "wan")
         vae = VAELoader("wan_2.1_vae.safetensors")

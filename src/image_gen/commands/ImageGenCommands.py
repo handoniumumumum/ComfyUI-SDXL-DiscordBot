@@ -138,7 +138,7 @@ class ImageGenCommands:
             input_file: Attachment = None,
             seed: int = None,
         ):
-            if input_file.content_type not in ["image/png", "image/jpeg", "image/jpg"]:
+            if input_file is not None and input_file.content_type not in ["image/png", "image/jpeg", "image/jpg"]:
                 await interaction.response.send_message(
                     f"{interaction.user.mention} `Only PNG, JPG, and JPEG images are supported for video generation`",
                     ephemeral=True,

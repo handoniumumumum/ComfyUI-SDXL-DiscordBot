@@ -148,7 +148,7 @@ async def _do_image_wan(params: ImageWorkflow, model_type: ModelType, loras: lis
         positive = CLIPTextEncode(params.prompt, clip)
         negative = CLIPTextEncode(params.negative_prompt or "静态", clip) # 静态 means "static"
         clip_vision_output = CLIPVisionEncode(clip_vision, image)
-        positive, negative, latent = WanImageToVideo(positive, negative, vae, 512, 512, 32, 1, clip_vision_output, image)
+        positive, negative, latent = WanImageToVideo(positive, negative, vae, 320, 320, 32, 1, clip_vision_output, image)
         latent = KSampler(model, params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler, positive, negative, latent, 1)
         image2 = VAEDecode(latent, vae)
         video = VHSVideoCombine(image2, 16, 0, "final_output", "image/gif", False, True, None, None)
@@ -174,7 +174,7 @@ async def _do_wan(params: ImageWorkflow, model_type: ModelType, loras: list[Lora
         vae = VAELoader("wan_2.1_vae.safetensors")
         conditioning = CLIPTextEncode(params.prompt, clip)
         negative_conditioning = CLIPTextEncode(params.negative_prompt or "静态", clip) # 静态 means "static"
-        latent = EmptyHunyuanLatentVideo(width=512, height = 512, length = 32)
+        latent = EmptyHunyuanLatentVideo(width=640, height = 480, length = 32)
         latent = KSampler(model, params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler, conditioning, negative_conditioning, latent, 1)
         image2 = VAEDecode(latent, vae)
         video = VHSVideoCombine(image2, 16, 0, "final_output", "image/gif", False, True, None, None)

@@ -124,7 +124,7 @@ class ImageGenCommands:
                 interaction,
                 f"🎥{interaction.user.mention} asked me to create a video with SVD! {random.choice(generation_messages)} 🎥",
                 f"{interaction.user.mention} asked me to create video with SVD! {random.choice(completion_messages)} 🎥",
-                "video",
+                "svd",
                 params,
             )
             
@@ -163,9 +163,9 @@ class ImageGenCommands:
             )
             await self._do_request(
                 interaction,
-                f"🎥{interaction.user.mention} asked me to create a video with WAN! {random.choice(generation_messages)} 🎥",
-                f"{interaction.user.mention} asked me to create video with WAN! {random.choice(completion_messages)} 🎥",
-                "wan",
+                f"🎥{interaction.user.mention} asked me to imagine {prompt} with WAN! {random.choice(generation_messages)} 🎥",
+                f"{interaction.user.mention} asked me to imagine {prompt} with WAN! {random.choice(completion_messages)} 🎥",
+                "video",
                 params,
             )
 

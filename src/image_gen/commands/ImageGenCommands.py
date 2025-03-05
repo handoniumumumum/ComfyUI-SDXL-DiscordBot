@@ -124,7 +124,7 @@ class ImageGenCommands:
                 interaction,
                 f"🎥{interaction.user.mention} asked me to create a video with SVD! {random.choice(generation_messages)} 🎥",
                 f"{interaction.user.mention} asked me to create video with SVD! {random.choice(completion_messages)} 🎥",
-                "svd",
+                "video",
                 params,
             )
             

@@ -134,9 +134,26 @@ async def _do_svd(params: ImageWorkflow, model_type: ModelType, loras: list[Lora
     return [final_video]
 
 async def _do_image_wan(params: ImageWorkflow, model_type: ModelType, loras: list[Lora], interaction):
-    with Workflow() as wf:
-        
-        image = LoadImage(params.filename)[0]
+    import PIL
+    max_width = int(config["IMAGE_WAN_GENERATION_DEFAULTS"]["MAX_WIDTH"])
+    with open(params.filename, "rb") as f:
+        image = PIL.Image.open(f)
+        width = image.width
+        height = image.height
+        # If either dimension exceeds max_width, resize while maintaining aspect ratio
+        if width > max_width or height > max_width:
+            scale_factor = min(max_width / width, max_width / height)
+            new_width = int(width * scale_factor)
+            new_height = int(height * scale_factor)
+            image = image.resize((new_width, new_height))
+            # Save the resized image
+            output_path, filename = os.path.split(params.filename)
+            new_filename = f"wan_{filename}"
+            output_path = output_path + "/" + new_filename
+            image.save(fp=output_path)
+    
+    with Workflow() as wf:       
+        image = LoadImage(output_path)[0]
         if params.model.endswith(".gguf"):
             model = UnetLoaderGGUF(params.model)
         else:
@@ -148,7 +165,7 @@ async def _do_image_wan(params: ImageWorkflow, model_type: ModelType, loras: lis
         positive = CLIPTextEncode(params.prompt, clip)
         negative = CLIPTextEncode(params.negative_prompt or "静态", clip) # 静态 means "static"
         clip_vision_output = CLIPVisionEncode(clip_vision, image)
-        positive, negative, latent = WanImageToVideo(positive, negative, vae, 320, 320, 32, 1, clip_vision_output, image)
+        positive, negative, latent = WanImageToVideo(positive, negative, vae, new_width, new_height, 32, 1, clip_vision_output, image)
         latent = KSampler(model, params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler, positive, negative, latent, 1)
         image2 = VAEDecode(latent, vae)
         video = VHSVideoCombine(image2, 16, 0, "final_output", "image/gif", False, True, None, None)

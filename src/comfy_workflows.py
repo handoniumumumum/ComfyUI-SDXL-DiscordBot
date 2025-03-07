@@ -24,6 +24,9 @@ model_type_to_workflow = {
 config = configparser.ConfigParser()
 config.read("config.properties")
 comfy_root_directory = config["LOCAL"]["COMFY_ROOT_DIR"]
+use_align_your_steps = config["VIDEO_GENERATION_DEFAULTS"]["USE_ALIGN_YOUR_STEPS"].lower
+image_wan_teacache = config["IMAGE_WAN_GENERATION_DEFAULTS"]["USE_TEACACHE"].lower
+t2v_wan_teacache = config["WAN_GENERATION_DEFAULTS"]["USE_TEACACHE"].lower
 
 loop = None
 
@@ -117,7 +120,7 @@ async def _do_svd(params: ImageWorkflow, model_type: ModelType, loras: list[Lora
         model, clip_vision, vae = ImageOnlyCheckpointLoader(params.model)
         model = VideoLinearCFGGuidance(model, params.min_cfg)
         positive, negative, latent = SVDImg2vidConditioning(clip_vision, image, vae, 1024, 576, 25, params.motion, 8, params.augmentation)
-        if config["VIDEO_GENERATION_DEFAULTS"]["USE_ALIGN_YOUR_STEPS"].lower == "true":
+        if use_align_your_steps:
             scheduler = AlignYourStepsScheduler("SVD", params.num_steps)
             sampler = KSamplerSelect("euler")
             latent, _ = SamplerCustom(model, True, params.seed, params.cfg_scale, positive, negative, sampler, scheduler, latent)
@@ -158,6 +161,8 @@ async def _do_image_wan(params: ImageWorkflow, model_type: ModelType, loras: lis
             model = UnetLoaderGGUF(params.model)
         else:
             model = UNETLoader(params.model)
+        if image_wan_teacache:
+            model = TeaCacheForVidGen(model, 'wan2.1_i2v_480p_14B', 0.26)
         model = ModelSamplingSD3(model, 8)
         clip = CLIPLoader("umt5_xxl_fp8_e4m3fn_scaled.safetensors", "wan")
         vae = VAELoader("wan_2.1_vae.safetensors")
@@ -186,6 +191,8 @@ async def _do_wan(params: ImageWorkflow, model_type: ModelType, loras: list[Lora
             model = UnetLoaderGGUF(params.model)
         else:
             model = UNETLoader(params.model)
+        if t2v_wan_teacache == "true":
+            model = TeaCacheForVidGen(model, 'wan2.1_t2v_1.3B', 0.08)
         model = ModelSamplingSD3(model, 8)
         clip = CLIPLoader("umt5_xxl_fp8_e4m3fn_scaled.safetensors", "wan")
         vae = VAELoader("wan_2.1_vae.safetensors")

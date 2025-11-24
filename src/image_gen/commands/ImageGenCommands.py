@@ -164,7 +164,7 @@ class ImageGenCommands:
 
             file_name = get_filename(interaction, params)
 
-            fname = f"{file_name}.gif" if "GIF" in images[0].format else f"{file_name}.png"
+            fname = f"{file_name}.{images[0].format}"
 
             collage_path = create_collage(images, params)
 

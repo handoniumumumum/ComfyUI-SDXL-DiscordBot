@@ -78,6 +78,7 @@ IMAGE_WAN_GENERATION_DEFAULTS = get_defaults_for_command("IMAGE_WAN_GENERATION_D
 PONY_GENERATION_DEFAULTS = get_defaults_for_command("PONY_GENERATION_DEFAULTS", ModelType.PONY, "pony")
 SD3_GENERATION_DEFAULTS = get_defaults_for_command("SD3_GENERATION_DEFAULTS", ModelType.SD3, "sd3")
 FLUX_GENERATION_DEFAULTS = get_defaults_for_command("FLUX_GENERATION_DEFAULTS", ModelType.FLUX, "flux")
+FLUX2_GENERATION_DEFAULTS = get_defaults_for_command("FLUX2_GENERATION_DEFAULTS", ModelType.FLUX2, "flux2")
 ADD_DETAIL_DEFAULTS = get_defaults_for_command("ADD_DETAIL_DEFAULTS", None, "add_detail")
 UPSCALE_DEFAULTS = get_defaults_for_command("UPSCALE_DEFAULTS", None, "upscale")
 EDIT_DEFAULTS = get_defaults_for_command("EDIT_DEFAULTS", ModelType.FLUX_KONTEXT, "edit")
@@ -93,7 +94,9 @@ COMMAND_DEFAULTS = {
     "upscale": UPSCALE_DEFAULTS,
     "sd3": SD3_GENERATION_DEFAULTS,
     "flux": FLUX_GENERATION_DEFAULTS,
-    "edit": EDIT_DEFAULTS
+    "edit": EDIT_DEFAULTS,
+    "oldedit": EDIT_DEFAULTS,
+    "flux2": FLUX2_GENERATION_DEFAULTS,
 }
 
 MAX_RETRIES = int(get_default_from_config("BOT", "MAX_RETRIES") or 3)

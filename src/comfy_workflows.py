@@ -21,6 +21,7 @@ model_type_to_workflow = {
     ModelType.PONY: PonyWorkflow,
     ModelType.SD3: SD3Workflow,
     ModelType.FLUX: FluxWorkflow,
+    ModelType.FLUX2: Flux2Workflow,
     ModelType.FLUX_KONTEXT: FluxWorkflow
 }
 
@@ -205,7 +206,7 @@ async def _do_image_wan(params: ImageWorkflow, interaction):
             # Otherwise assume model is based on Wan 5B.
                 model = EasyCache(model, 0.15, 0.25, 0.95, True)
         if image_wan_triton == "true":
-            model = CompileModel(model)
+            model = ModelCompile(model, ModelCompile.mode.reduce_overhead)
         model = ModelSamplingSD3(model, 8)
         vae = VAELoader("wan2.2_vae.safetensors")
         positive = CLIPTextEncode(params.prompt, clip)
@@ -213,13 +214,14 @@ async def _do_image_wan(params: ImageWorkflow, interaction):
         latent = Wan22ImageToVideoLatent(vae, width, height, params.video_length, 1, image)
         latent = KSampler(model, params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler, positive, negative, latent, 1)
         image2 = VAEDecode(latent, vae)
-        video = VHSVideoCombine(image2, 24, 0, "final_output", VHSVideoCombine.format.image_gif, False, True, None, None)
+        #video = VHSVideoCombine(image2, 24, 0, "final_output", VHSVideoCombine.format.image_gif, False, True, None, None)
+        video = SaveAnimatedWEBP(image2, "final_output", params.fps, lossless = False)
         preview = PreviewImage(image)
     wf.task.add_preview_callback(lambda task, node_id, image: do_preview(task, node_id, image, interaction, params.prompt))
     await preview._wait()
     await video._wait()
     results = video.wait()._output
-    final_video = PIL.Image.open(os.path.join(comfy_root_directory, "output", results["gifs"][0]["filename"]))
+    final_video = PIL.Image.open(os.path.join(comfy_root_directory, "output", results["images"][0]["filename"]))
     return [final_video]
 
 
@@ -247,9 +249,9 @@ async def _do_wan(params: ImageWorkflow, interaction):
         if t2v_wan_distilled == "true":
             model_distilled = LoraLoaderModelOnly(model, 'wan-1.3b-cfgdistill-video.safetensors', 1)
         if t2v_wan_triton == "true":
-            model = CompileModel(model)
+            model = ModelCompile(model)
             if t2v_wan_distilled == "true":
-                model = CompileModel(model_distilled)
+                model = ModelCompile(model_distilled)
         vae = VAELoader("wan2.2_vae.safetensors")
         conditioning = CLIPTextEncode(params.prompt, clip)
         negative_conditioning = CLIPTextEncode(params.negative_prompt or "静态", clip)  # 静态 means "static"
@@ -263,11 +265,13 @@ async def _do_wan(params: ImageWorkflow, interaction):
         else:
             latent = KSampler(model, params.seed, params.num_steps, params.cfg_scale, params.sampler, params.scheduler, conditioning, negative_conditioning, latent, 1)
         image2 = VAEDecode(latent, vae)
-        video = VHSVideoCombine(image2, params.fps, 0, "final_output", VHSVideoCombine.format.image_gif, False, True, None, None)
-    wf.task.add_preview_callback(lambda task, node_id, image: do_preview(task, node_id, image, interaction, params.prompt))
+        #video = VHSVideoCombine(image2, params.fps, 0, "final_output", VHSVideoCombine.format.image_gif, False, True, None, None)
+        video = SaveAnimatedWEBP(image2, "final_output", params.fps, lossless = False)
+    #wf.task.add_preview_callback(lambda task, node_id, image: do_preview(task, node_id, image, interaction, params.prompt))
+    wf.task.add_progress_callback(lambda task_progress: do_progress(task_progress, interaction))
     await video._wait()
     results = video.wait()._output
-    final_video = PIL.Image.open(os.path.join(comfy_root_directory, "output", results["gifs"][0]["filename"]))
+    final_video = PIL.Image.open(os.path.join(comfy_root_directory, "output", results["images"][0]["filename"]))
     return [final_video]
 
 
@@ -315,7 +319,12 @@ def do_preview(task, node_id, image, interaction, prompt):
         asyncio.run_coroutine_threadsafe(interaction.edit_original_response(attachments=[discord.File(fp, filename)]), loop)
     except Exception as e:
         print(e)
-
+        
+def do_progress(progress: TaskProgress, interaction):
+    try:
+        asyncio.run_coroutine_threadsafe(interaction.edit_original_response(content=progress.task.prompt_id + "Progress! Step " + str(progress.value) + "of " + str(progress.max)), loop)
+    except Exception as e:
+        print(e)
 
 async def do_workflow(params: ImageWorkflow, interaction: discord.Interaction):
     global user_queues, loop

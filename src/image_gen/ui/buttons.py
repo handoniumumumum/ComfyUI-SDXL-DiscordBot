@@ -45,8 +45,8 @@ class RerollableButton:
         images = await do_workflow(params, interaction)
 
         if self.is_video:
-            collage_path = create_gif_collage(images)
-            fname = "collage.gif"
+            collage_path = create_gif_collage(images, params)
+            fname = f"collage.{images[0].format}"
         else:
             collage_path = create_collage(images, params)
             fname = "collage.png"
@@ -588,21 +588,14 @@ class EditResponse(discord.ui.View):
         await interaction.response.send_message(f"Generating image with new parameters, this shouldn't take too long...")
         images = await do_workflow(params, interaction)
         final_message = f'{interaction.user.mention} asked me to re-imagine "{params.prompt}", here is what I imagined for them. Seed: {params.seed}'
-        
-        if self.command == "video": 
-            collage_path = create_gif_collage(images)
-            fname = "collage.gif"
-        else:
-            collage_path = create_collage(images, params)
-            fname = "collage.png"
-
+        collage_path = create_collage(images, params)
         is_nsfw = False
         if config["NSFW_DETECTION"]["NSFW_DETECTION_ENABLED"] == "True":
             is_nsfw = check_nsfw(collage_path, params.prompt)
             
         buttons = Buttons(params, images, interaction.user, is_nsfw, command=self.command)
 
-        await interaction.channel.send(content=final_message, file=discord.File(fp=collage_path, filename=fname, spoiler=is_nsfw), view=buttons)
+        await interaction.channel.send(content=final_message, file=discord.File(fp=collage_path, spoiler=is_nsfw), view=buttons)
 
     async def show_edit_message(self, interaction):
         await interaction.response.send_message("Here are some options to edit your images!", view=self, ephemeral=True)

@@ -251,7 +251,33 @@ class SD3Workflow(SDWorkflow):
         self.model = ModelSamplingSD3(self.model, 3)
         super().sample(use_ays)
 
-
+class Flux2Workflow(SDWorkflow):
+    def _load_model(self):
+        model = UNETLoader(self.params.model)
+        clip = CLIPLoader(CLIPLoader.clip_name.qwen_3_4b_fp4_flux2, 'flux2', 'default')
+        if self.params.lora_dict:
+            for lora in self.params.lora_dict:
+                if lora.name == None or lora.name == "None":
+                    continue
+                model, clip = LoraLoader(model, clip, lora.name, lora.strength, lora.strength)
+        vae = VAELoader(VAELoader.vae_name.flux2_vae)
+        # if self.params.use_triton is True:
+        #     model = ModelCompile(model)
+        self.model = model
+        self.clip = clip
+        self.vae = vae
+        
+    def sample(self, use_ays: bool = False):
+        width, height = self.params.dimensions
+        noise = RandomNoise(self.params.seed)
+        guider = BasicGuider(self.model, self.conditioning)
+        sampler = KSamplerSelect(self.params.sampler)
+        sigmas = Flux2Scheduler(self.params.num_steps, width, height)
+        self.output_latents, _ = SamplerCustomAdvanced(noise, guider, sampler, sigmas, self.latents[0])
+        
+    def edit_conditioning(self, use_ays: bool = False):
+       self.conditioning = ReferenceLatent(self.conditioning, self.latents[0])
+          
 class FluxWorkflow(SDWorkflow):
     def _load_model(self):
         if self.params.model.endswith(".gguf"):
@@ -276,8 +302,8 @@ class FluxWorkflow(SDWorkflow):
                 model = EasyCache(model, 0.05, 0.15, 0.95)
             else:   
                 model = EasyCache(model, 0.24, 0.15, 0.95)
-        if self.params.use_triton is True:
-            model = CompileModel(model)
+        # if self.params.use_triton is True:
+        #     model = ModelCompile(model)
         width, height = self.params.dimensions
         model = ModelSamplingFlux(model, 1.15, 0.5, width, height)
         if self.should_do_controlnet():

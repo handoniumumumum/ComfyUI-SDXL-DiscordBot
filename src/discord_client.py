@@ -43,7 +43,12 @@ async def on_ready():
         commands.append(FluxCommand(tree, "FLUX"))
     from src.command_descriptions import FLUX_KONTEXT_ARG_CHOICES
     if len(FLUX_KONTEXT_ARG_CHOICES["model"]) != 0:
-        from src.image_gen.commands.ImageGenCommands import EditCommand
+        from src.image_gen.commands.ImageGenCommands import OldEditCommand
+        commands.append(OldEditCommand(tree, "oldedit"))
+    from src.command_descriptions import FLUX2_ARG_CHOICES
+    if len(FLUX2_ARG_CHOICES["model"]) != 0:
+        from src.image_gen.commands.ImageGenCommands import Flux2Command, EditCommand
+        commands.append(Flux2Command(tree, "FLUX2"))
         commands.append(EditCommand(tree, "edit"))
     from src.generic_commands import HelpCommands, InfoCommands
     commands.append(HelpCommands(tree))

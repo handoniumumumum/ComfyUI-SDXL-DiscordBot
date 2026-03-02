@@ -6,10 +6,11 @@ from PIL import Image
 from src.util import get_workflow
 
 
-def create_gif_collage(images):
+def create_gif_collage(images, image_workflow):
     timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
-    collage_path = f"./out/images_{timestamp}.gif"
-    images[0].save(collage_path, save_all=True, append_images=images[1:], duration=125, loop=0)
+    collage_path = f"./out/images_{timestamp}"
+    exif_info = images[0].getexif()
+    images[0].save(collage_path, 'webp', save_all=True, append_images=images[1:], loop=0, allow_mixed=True, exif=exif_info)
 
     return collage_path
 
@@ -19,8 +20,8 @@ def create_collage(images, image_workflow = None):
         print("Error: No images to make collage")
         return None
 
-    if images[0].format == 'GIF':
-        return create_gif_collage(images)
+    if images[0].format == 'WEBP' or 'GIF' or 'MP4':
+        return create_gif_collage(images, image_workflow)
 
     num_images = len(images)
     num_cols = ceil(sqrt(num_images))

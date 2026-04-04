@@ -72,7 +72,12 @@ class ImageGenCommands:
 
             file_name = get_filename(interaction, params)
 
-            fname = f"{file_name}.gif" if "GIF" in images[0].format else f"{file_name}.png"
+            if "GIF" in images[0].format:
+                fname = f"{file_name}.gif"
+            elif "WEBP" in images[0].format:
+                fname = f"{file_name}.webp"
+            else:
+                fname = f"{file_name}.png"
 
             collage_path = create_collage(images, params)
 
@@ -295,6 +300,7 @@ class WANCommand(ImageGenCommands):
                 [1.0, 1.0],
                 num_steps=generation_defaults.num_steps,
                 cfg_scale=cfg_scale or generation_defaults.cfg_scale,
+                batch_size=generation_defaults.batch_size,
                 seed=seed,
                 slash_command="video",
                 sampler=generation_defaults.sampler,

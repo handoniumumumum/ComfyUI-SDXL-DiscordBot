@@ -22,6 +22,7 @@ class SD15ModelDefinition(ModelDefinition):
         }
         self.argument_choices = {
             **BASE_ARG_CHOICES,
+            **self.get_general_argument_choices(),
         }
 
 
@@ -42,6 +43,7 @@ class SDXLModelDefinition(ModelDefinition):
         }
         self.argument_choices = {
             **BASE_ARG_CHOICES,
+            **self.get_general_argument_choices(),
         }
 
 
@@ -62,6 +64,7 @@ class CascadeModelDefinition(ModelDefinition):
         }
         self.argument_choices = {
             **BASE_ARG_CHOICES,
+            **self.get_general_argument_choices(),
         }
 
 
@@ -82,6 +85,7 @@ class PonyModelDefinition(ModelDefinition):
         }
         self.argument_choices = {
             **BASE_ARG_CHOICES,
+            **self.get_general_argument_choices(),
         }
 
 
@@ -102,6 +106,7 @@ class SD3ModelDefinition(ModelDefinition):
         }
         self.argument_choices = {
             **BASE_ARG_CHOICES,
+            **self.get_general_argument_choices(),
         }
 
 
@@ -122,6 +127,7 @@ class FluxModelDefinition(ModelDefinition):
         }
         self.argument_choices = {
             **BASE_ARG_CHOICES,
+            **self.get_general_argument_choices(),
         }
 
 
@@ -129,6 +135,8 @@ class FluxModelDefinition(ModelDefinition):
 class FluxKontextModelDefinition(ModelDefinition):
     model_name: str = "FLUX_KONTEXT"
     model_type: ModelType = ModelType.FLUX_KONTEXT
+    slash_command: str = "kontext"
+    config_section: str = "KONTEXT"
     slash_command: str = "kontext"
     config_section: str = "KONTEXT"
     model_folder: str = "flux_kontext"
@@ -142,6 +150,7 @@ class FluxKontextModelDefinition(ModelDefinition):
         }
         self.argument_choices = {
             **BASE_ARG_CHOICES,
+            **self.get_general_argument_choices(),
         }
 
 @dataclass
@@ -161,6 +170,7 @@ class Flux2ModelDefinition(ModelDefinition):
         }
         self.argument_choices = {
             **BASE_ARG_CHOICES,
+            **self.get_general_argument_choices(),
         }
 
 @dataclass
@@ -180,6 +190,7 @@ class Flux2EditModelDefinition(ModelDefinition):
         }
         self.argument_choices = {
             **BASE_ARG_CHOICES,
+            **self.get_general_argument_choices(),
         }
 
 # Video generation definitions
@@ -200,6 +211,7 @@ class SVDModelDefinition(ModelDefinition):
         }
         self.argument_choices = {
             **BASE_ARG_CHOICES,
+            **self.get_general_argument_choices(),
         }
 
 
@@ -220,6 +232,7 @@ class WANModelDefinition(ModelDefinition):
         }
         self.argument_choices = {
             **BASE_ARG_CHOICES,
+            **self.get_general_argument_choices(),
         }
 
 
@@ -240,6 +253,7 @@ class ImageWANModelDefinition(ModelDefinition):
         }
         self.argument_choices = {
             **BASE_ARG_CHOICES,
+            **self.get_general_argument_choices(),
         }
 
 
